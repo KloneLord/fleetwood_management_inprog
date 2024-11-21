@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Details - Edit Customer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      background-color: #f4f6f9;
+    }
+
+
+
+    .content-wrapper {
+
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .content-wrapper {
+        margin-left: 0;
+
+      }
+    }
+
+
+    .icon-section .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 0.7rem;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<!-- Main Content -->
+<div class="content-wrapper">
+  <main class="container">
+    <div class="container mt-5">
+      <h1 id="formTitle">Add Customer</h1>
+      <form id="customerForm">
+        <input type="hidden" id="customerId" name="customerId">
+        <div class="mb-3">
+          <label for="customerName" class="form-label">Customer Name</label>
+          <input type="text" class="form-control" id="customerName" name="customerName" required>
+        </div>
+        <div class="mb-3">
+          <label for="contactName" class="form-label">Contact Name</label>
+          <input type="text" class="form-control" id="contactName" name="contactName">
+        </div>
+        <div class="mb-3">
+          <label for="phoneNumber" class="form-label">Phone Number</label>
+          <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber">
+        </div>
+        <div class="mb-3">
+          <label for="mobileNumber" class="form-label">Mobile Number</label>
+          <input type="tel" class="form-control" id="mobileNumber" name="mobileNumber">
+        </div>
+        <div class="mb-3">
+          <label for="emailAddress" class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="emailAddress" name="emailAddress">
+        </div>
+        <div class="mb-3">
+          <label for="street" class="form-label">Street</label>
+          <input type="text" class="form-control" id="street" name="street">
+        </div>
+        <div class="mb-3">
+          <label for="city" class="form-label">City</label>
+          <input type="text" class="form-control" id="city" name="city">
+        </div>
+        <div class="mb-3">
+          <label for="postalCode" class="form-label">Postal Code</label>
+          <input type="text" class="form-control" id="postalCode" name="postalCode">
+        </div>
+        <div class="mb-3">
+          <label for="region" class="form-label">Region</label>
+          <input type="text" class="form-control" id="region" name="region">
+        </div>
+        <div id="jobSitesContainer" class="mb-3">
+          <label class="form-label">Job Sites</label>
+          <button type="button" class="btn btn-sm btn-secondary mb-2" onclick="addJobSite()" >Add Job Site</button>
+        </div>
+        <button type="submit" class="btn btn-primary" style="min-width: 100px">Save</button><button class="btn btn-primary" style="margin-left: 20px; min-width: 100px" onclick="closePage()">Close</button>
+      </form>
+
+      <div id="responseMessage" class="mt-3"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function closePage() {
+    // Attempt to close the current window
+    window.close();
+
+    // Notify the user if the browser blocks the action
+    if (!window.closed) {
+      alert('Unable to close the page. You may need to close it manually.');
+    }
+  }
+
+  let currentCustomerId = null; // Variable to store the current customer ID
+
+  // Load customer data for editing
+  document.addEventListener('DOMContentLoaded', async () => {
+    const customerId = sessionStorage.getItem('customerId'); // Get customer ID from sessionStorage
+    if (customerId) {
+      currentCustomerId = customerId; // Store customer ID in a variable
+      document.getElementById('formTitle').textContent = 'Edit Customer'; // Update form title
+
+      try {
+        // Fetch customer details from the server
+        const response = await axios.get(`/api/customers/${customerId}`);
+        const customer = response.data;
+
+        // Populate form fields with customer data
+        for (const key in customer) {
+          if (document.getElementById(key)) {
+            document.getElementById(key).value = customer[key];
+          }
+        }
+
+        // Populate job sites
+        customer.jobSites.forEach(site => addJobSite(site.siteName, site.siteAddress));
+      } catch (error) {
+        console.error('Error loading customer data:', error);
+        document.getElementById('responseMessage').innerHTML = `<div class="alert alert-danger">Failed to load customer data.</div>`;
+      }
+    }
+  });
+
+  // Add job site row
+  function addJobSite(siteName = '', siteAddress = '') {
+    const container = document.getElementById('jobSitesContainer');
+    const row = document.createElement('div');
+    row.className = 'row mb-2';
+    row.innerHTML = `
+            <div class="col">
+                <input type="text" class="form-control" name="siteName" placeholder="Site Name" value="${siteName}">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="siteAddress" placeholder="Site Address" value="${siteAddress}">
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">Remove</button>
+            </div>`;
+    container.appendChild(row);
+  }
+
+  // Submit form
+  document.getElementById('customerForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // Collect job site data
+    data.jobSites = Array.from(document.querySelectorAll('#jobSitesContainer .row')).map(row => ({
+      siteName: row.querySelector('input[name="siteName"]').value,
+      siteAddress: row.querySelector('input[name="siteAddress"]').value,
+    }));
+
+    const responseMessageElement = document.getElementById('responseMessage');
+    responseMessageElement.innerHTML = ''; // Clear previous message
+
+    // Check if the customer ID is set
+    if (!currentCustomerId) {
+      responseMessageElement.innerHTML = `<div class="alert alert-danger">Error: Customer ID is missing. Cannot update.</div>`;
+      return; // Stop the form submission
+    }
+
+    try {
+      // Make the PUT request to update the customer
+      const endpoint = `/api/customers/${currentCustomerId}`;
+      const method = 'put';
+
+      await axios({ method, url: endpoint, data });
+
+      // Display success message
+      responseMessageElement.innerHTML = '<div class="alert alert-success">Customer updated successfully!</div>';
+
+      // Redirect to the customer list page after a short delay (optional)
+      setTimeout(() => {
+
+      }, 2000);
+    } catch (error) {
+      // Display error message
+      const errorMessage = error.response?.data?.message || 'Failed to update customer.';
+      responseMessageElement.innerHTML = `<div class="alert alert-danger">${errorMessage}</div>`;
+      console.error('Error updating customer:', error);
+    }
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sidebar Script -->
+<script src="/utils/sidebar.js"></script>
+<script>
+  // Fetch session data from the server
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+
+      // Log session data
+      console.log('Session data received:', data);
+
+      // Update the username
+      const usernameElement = document.getElementById('username');
+      if (usernameElement) {
+        usernameElement.innerText = data.username;
+      }
+
+      // Start the session timer
+      startSessionTimer(data.loginTime);
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
+  // Initialize all functions on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    startLiveClock();
+    try {
+      // Calculate 90% of the available screen height
+      const newHeight = screen.availHeight * 0.9; // 90% of maximum available screen height
+      window.resizeTo(window.outerWidth, newHeight);
+    } catch (error) {
+      console.error('Error resizing the window:', error);
+    }
+  });
+</script>
+</body>
+</html>

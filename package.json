@@ -1,0 +1,30 @@
+{
+  "name": "fleetwood_management_inprog",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "kill-port-5000": "npx kill-port 5000",
+    "start": "npm run kill-port-5000 && node server.js",
+    "dev": "nodemon server.js"
+  },
+  "private": true,
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
+    "find-process": "^1.4.7",
+    "mongoose": "^8.8.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "chai": "^5.1.2",
+    "chai-http": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "kill-port": "^2.0.1",
+    "mocha": "^10.8.2"
+  }
+}

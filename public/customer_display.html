@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background-color: #20c997;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .customer-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .customer-card h2 {
+            color: #20c997;
+        }
+
+        .customer-card .field {
+            margin-bottom: 15px;
+        }
+
+        .customer-card .field span {
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        .job-sites {
+            margin-top: 20px;
+        }
+
+        .job-site {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .buttons .btn {
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Customer Details</h1>
+    <button onclick="closeDetails()"><i class="fas fa-times"></i> Close</button>
+</div>
+
+<div class="container">
+    <div class="customer-card">
+        <h2 id="customerName">Customer Name</h2>
+        <div class="field"><span>Contact Name:</span> <span id="contactName">N/A</span></div>
+        <div class="field"><span>Phone Number:</span> <span id="phoneNumber">N/A</span></div>
+        <div class="field"><span>Mobile Number:</span> <span id="mobileNumber">N/A</span></div>
+        <div class="field"><span>Email Address:</span> <span id="emailAddress">N/A</span></div>
+        <div class="field"><span>Street:</span> <span id="street">N/A</span></div>
+        <div class="field"><span>City:</span> <span id="city">N/A</span></div>
+        <div class="field"><span>Postal Code:</span> <span id="postalCode">N/A</span></div>
+        <div class="field"><span>Region:</span> <span id="region">N/A</span></div>
+
+        <div class="job-sites">
+            <h3>Job Sites</h3>
+            <div id="jobSitesContainer"></div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button class="btn btn-primary" style="min-width: 100px" onclick="editCustomer()">Edit</button>
+        <button class="btn btn-primary" style="min-width: 100px" onclick="closePage()">Close</button>
+    </div>
+</div>
+
+<script>
+    function closePage() {
+        // Attempt to close the current window
+        window.close();
+
+        // Notify the user if the browser blocks the action
+        if (!window.closed) {
+            alert('Unable to close the page. You may need to close it manually.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const customerId = sessionStorage.getItem('customerId'); // Fetch customer ID from sessionStorage
+        if (!customerId) {
+            alert('No customer selected.');
+            return;
+        }
+
+        try {
+            // Fetch customer details
+            const response = await axios.get(`/api/customers/${customerId}`);
+            const customer = response.data;
+
+            // Populate card with customer details
+            document.getElementById('customerName').textContent = customer.customerName || 'N/A';
+            document.getElementById('contactName').textContent = customer.contactName || 'N/A';
+            document.getElementById('phoneNumber').textContent = customer.phoneNumber || 'N/A';
+            document.getElementById('mobileNumber').textContent = customer.mobileNumber || 'N/A';
+            document.getElementById('emailAddress').textContent = customer.emailAddress || 'N/A';
+            document.getElementById('street').textContent = customer.street || 'N/A';
+            document.getElementById('city').textContent = customer.city || 'N/A';
+            document.getElementById('postalCode').textContent = customer.postalCode || 'N/A';
+            document.getElementById('region').textContent = customer.region || 'N/A';
+
+            // Populate job sites
+            const jobSitesContainer = document.getElementById('jobSitesContainer');
+            customer.jobSites.forEach(site => {
+                const jobSiteDiv = document.createElement('div');
+                jobSiteDiv.className = 'job-site';
+                jobSiteDiv.innerHTML = `
+                    <p><span>Site Name:</span> ${site.siteName || 'N/A'}</p>
+                    <p><span>Site Address:</span> ${site.siteAddress || 'N/A'}</p>
+                `;
+                jobSitesContainer.appendChild(jobSiteDiv);
+            });
+        } catch (error) {
+            console.error('Error loading customer data:', error);
+            alert('Failed to load customer details.');
+        }
+    });
+
+    function closeDetails() {
+        window.history.back(); // Navigate back to the previous page
+    }
+
+    function editCustomer() {
+        const customerId = sessionStorage.getItem('customerId');
+        if (customerId) {
+            sessionStorage.setItem('customerId', customerId); // Ensure customer ID is stored
+            window.location.href = '/customer_displayedit.html';
+        } else {
+            alert('No customer selected for editing.');
+        }
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</body>
+</html>

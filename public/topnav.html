@@ -1,0 +1,211 @@
+<style>
+
+  .navbar {
+    font-size: 16px; /* Adjust font size */
+  }
+
+  #user-info {
+    white-space: nowrap; /* Prevent wrapping for long usernames */
+  }
+
+  .me-3 {
+    margin-right: 20px; /* Ensure consistent spacing between elements */
+  }
+</style>
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid d-flex align-items-center">
+    <!-- Left Column: Welcome and Logged-in Info -->
+    <div class="d-flex align-items-center flex-grow-1">
+      <div id="user-info">
+        Welcome <span id="username">Jimmy</span>, logged in for
+        <span id="session-duration">00:00:00</span>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live Clock, Notifications, and Messages -->
+    <div class="d-flex align-items-center">
+      <!-- Live Clock -->
+      <div class="me-3">
+        Current Time: <span id="live-clock">Loading...</span>
+      </div>
+
+      <!-- Notifications -->
+      <div class="me-3">
+        <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="notificationsDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+        ><strong>Notifications</strong>
+          <i class="fas fa-bell"></i>
+          <span class="badge bg-danger">3</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+          <li><a class="dropdown-item" href="#">New user registered</a></li>
+          <li><a class="dropdown-item" href="#">Server backup completed</a></li>
+          <li><a class="dropdown-item" href="#">New order placed</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#">View all</a></li>
+        </ul>
+      </div>
+
+      <!-- Messages -->
+      <div>
+        <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="messagesDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+        ><strong>Messages</strong>
+          <i class="fas fa-envelope"></i>
+          <span class="badge bg-primary">5</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
+          <li><a class="dropdown-item" href="#">John: Meeting tomorrow?</a></li>
+          <li><a class="dropdown-item" href="#">Jane: Check the report</a></li>
+          <li><a class="dropdown-item" href="#">Admin: System update</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#">View all</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+
+<script>
+  // Update user info dynamically
+  // Function to fetch session data
+
+
+
+    async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+
+      // Set username once
+      const userInfoElement = document.getElementById('user-info');
+      console.log(document.getElementById('user-info')); // Should not be null
+      if (userInfoElement) {
+        userInfoElement.innerText = `Welcome ${data.username}`;
+      }
+
+      // Start session duration timer
+      startSessionTimer(data.loginTime);
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
+
+  // Function to start the session duration timer
+  function startSessionTimer(loginTime) {
+    console.log('startSessionTimer called with loginTime:', loginTime); // Debug log
+    const loginTimestamp = new Date(loginTime).getTime();
+
+    if (isNaN(loginTimestamp)) {
+      console.error('Invalid loginTimestamp:', loginTime);
+      return; // Exit the function if loginTime is invalid
+    }
+
+    setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - loginTimestamp) / 1000);
+
+      // Calculate hours, minutes, and seconds
+      const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+
+      // Debug the calculated time
+      console.log(`Elapsed time: ${hours}:${minutes}:${seconds}`);
+
+      // Update the DOM
+      const durationElement = document.getElementById('session-duration');
+      if (durationElement) {
+        durationElement.innerText = `${hours}:${minutes}:${seconds}`;
+      } else {
+        console.error('session-duration element not found in the DOM');
+      }
+    }, 1000);
+  }
+
+
+  // Function to start the live clock
+  function startLiveClock() {
+    setInterval(() => {
+      const now = new Date();
+      const clockElement = document.getElementById('live-clock');
+      if (clockElement) {
+        clockElement.innerText = now.toLocaleTimeString();
+      }
+    }, 1000); // Update every second
+  }
+
+  // Initialize on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    startLiveClock();
+  });
+
+
+  // Initialize on DOM load
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    startLiveClock();
+  });
+
+
+  // Load top navigation with session info and clock
+  async function loadTopNav() {
+    try {
+      const sessionData = await fetchSessionData();
+      if (!sessionData) {
+        console.error('No session data available.');
+        return;
+      }
+
+      const topnav = await fetch('/topnav.html');
+      document.getElementById('topnav').innerHTML = await topnav.text();
+
+      const userInfoElement = document.getElementById('user-info');
+      if (userInfoElement) {
+        const duration = new Date(sessionData.duration * 1000)
+                .toISOString()
+                .substr(11, 8);
+        userInfoElement.innerText = `Welcome ${sessionData.username} logged in for ${duration}`;
+
+      }
+
+      startLiveClock(); // Start the clock after topnav is loaded
+    } catch (error) {
+      console.error('Error loading top navigation:', error);
+    }
+  }
+
+
+
+  // Run the function after DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    startLiveClock()
+    loadTopNav();
+  });
+
+
+</script>
+
+
+

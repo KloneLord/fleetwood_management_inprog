@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add/Edit Customer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      background-color: #f4f6f9;
+    }
+
+    .sidebar {
+      height: 100vh; /* Full height */
+      position: fixed;
+      top: 70px; /* Align with topnav */
+      left: 0;
+      z-index: 1;
+      background-color: #343a40; /* Dark sidebar */
+      color: #fff;
+      border-right: 1px solid #ddd;
+      width: 200px;
+      font-size: 14px;
+    }
+
+    .sidebar a {
+      color: #adb5bd;
+      text-decoration: none;
+      display: block;
+      padding: 10px 15px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .sidebar a:hover {
+      background-color: #495057; /* Slight hover effect */
+      color: #fff;
+    }
+
+    .sidebar a.active {
+      background-color: #20c997; /* Teal for active link */
+      color: #fff;
+    }
+
+    .topnav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 2;
+      background-color: #20c997; /* Teal for topnav */
+      color: #fff;
+      height: 70px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .topnav .container-fluid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+    }
+
+    .content-wrapper {
+      margin-top: 70px;
+      margin-left: 200px;
+      padding: 20px;
+    }
+
+    @media (max-width: 991.98px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .content-wrapper {
+        margin-left: 0;
+        margin-top: 140px;
+      }
+    }
+
+    .icon-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .icon-section .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 0.7rem;
+    }
+
+    .icon-wrapper {
+      position: relative;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .icon-wrapper:hover {
+      color: #fff; /* Slight hover effect */
+    }
+  </style>
+</head>
+<body>
+<!-- Top Navigation -->
+<div class="topnav" id="topnav">
+  <div class="container-fluid">
+    <!-- User Info -->
+    <div id="user-info">
+      Welcome <span id="username">User</span>, logged in for
+      <span id="session-duration">00:00:00</span>
+    </div>
+
+    <!-- Live Clock + Icons -->
+    <div class="icon-section">
+      <div>
+        Current Time: <span id="live-clock">Loading...</span>
+      </div>
+      <!-- Notifications Icon -->
+      <div class="icon-wrapper">
+        <i class="fas fa-bell"></i>
+        <span class="badge bg-danger">3</span>
+      </div>
+      <!-- Messages Icon -->
+      <div class="icon-wrapper">
+        <i class="fas fa-envelope"></i>
+        <span class="badge bg-primary">5</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar"></div>
+
+<!-- Main Content -->
+<div class="content-wrapper">
+  <main class="container">
+    <div class="container mt-5">
+      <h1>Customers</h1>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Actions</th>
+          <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"> Select</th>
+        </tr>
+        </thead>
+        <tbody id="customerTableBody"></tbody>
+      </table>
+      <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
+    </div>
+
+
+  </main>
+</div>
+<script>
+  // Fetch customers
+  async function loadCustomers() {
+    const response = await axios.get('/api/customers');
+    const customers = response.data;
+    const tableBody = document.getElementById('customerTableBody');
+    tableBody.innerHTML = customers.map(customer => `
+            <tr>
+                <td>${customer.customerName}</td>
+                <td>${customer.emailAddress}</td>
+                <td>${customer.phoneNumber}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="viewCustomer('${customer._id}')">View</button>
+                    <button class="btn btn-sm btn-primary" onclick="editCustomer('${customer._id}')">Edit</button>
+                </td>
+                <td><input type="checkbox" value="${customer._id}"></td>
+            </tr>
+        `).join('');
+  }
+
+  // View customer
+  function viewCustomer(customerId) {
+    sessionStorage.setItem('customerId', customerId); // Save customer ID to session storage
+    const width = Math.floor(window.innerWidth * 0.8); // 80% of screen width
+    const height = Math.floor(window.innerHeight * 0.7); // 70% of screen height
+    const left = Math.floor((window.innerWidth - width) / 2); // Center the window horizontally
+    const top = Math.floor((window.innerHeight - height) / 2); // Center the window vertically
+
+    window.open(
+            '/customer_display.html', // URL of the new window
+            '_blank', // Open in a new tab/window
+            `width=${width},height=${height},top=${top},left=${left},resizable=yes`
+    );
+  }
+
+  // Edit customer
+  function editCustomer(customerId) {
+    sessionStorage.setItem('customerId', customerId);
+    window.location.href = '/customer_edit.html';
+  }
+
+  // Delete selected customers
+  async function deleteSelected() {
+    const ids = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
+    await axios.delete('/api/customers', { data: { ids } });
+    await loadCustomers();
+  }
+
+  // Toggle select all
+  function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = document.getElementById('selectAll').checked);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadCustomers);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sidebar Script -->
+<script src="/utils/sidebar.js"></script>
+<script>
+  // Fetch session data from the server
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+
+      // Log session data
+      console.log('Session data received:', data);
+
+      // Update the username
+      const usernameElement = document.getElementById('username');
+      if (usernameElement) {
+        usernameElement.innerText = data.username;
+      }
+
+      // Start the session timer
+      startSessionTimer(data.loginTime);
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
+
+  // Start a session duration timer
+  function startSessionTimer(loginTime) {
+    const loginTimestamp = new Date(loginTime).getTime();
+
+    if (isNaN(loginTimestamp)) {
+      console.error('Invalid loginTime:', loginTime);
+      return;
+    }
+
+    setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - loginTimestamp) / 1000);
+      const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+
+      const durationElement = document.getElementById('session-duration');
+      if (durationElement) {
+        durationElement.innerText = `${hours}:${minutes}:${seconds}`;
+      } else {
+        console.error('session-duration element not found');
+      }
+    }, 1000);
+  }
+
+  // Start a live clock
+  function startLiveClock() {
+    setInterval(() => {
+      const now = new Date();
+      const clockElement = document.getElementById('live-clock');
+      if (clockElement) {
+        clockElement.innerText = now.toLocaleTimeString();
+      }
+    }, 1000);
+  }
+
+  // Initialize all functions on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    startLiveClock();
+  });
+</script>
+</body>
+</html>
