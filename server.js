@@ -12,7 +12,7 @@ import customerApiRoutes from './routes/api/customerApiRoutes.js';
 import authApiRoutes from './routes/api/authApiRoutes.js';
 import sessionApiRoutes from './routes/api/sessionApiRoutes.js';
 import linkApiRoutes from './routes/api/linkApiRoutes.js';
-
+import categoryApiRoutes from './routes/api/categoryApiRoutes.js';
 dotenv.config();
 
 const __dirname = path.resolve(); // Absolute path to the working directory
@@ -50,7 +50,8 @@ app.use('/api/auth', authApiRoutes);
 app.use('/api/sessions', sessionApiRoutes);
 app.use('/api/links', linkApiRoutes);
 app.use('/api/customers', customerApiRoutes);
-// Authenticated Dashboard
+app.use('/api/categories', categoryApiRoutes);
+
 app.get('/dashboard', authMiddleware, (req, res) => {
     console.log('Serving dashboard to authenticated user:', req.session.user);
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));

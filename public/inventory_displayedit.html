@@ -14,7 +14,7 @@
 
 <div class="sidebar">
   <a href="/inventory_list.html">Inventory List</a>
-  <a href="/inventory_edit.html" class="active">Edit Inventory</a>
+  <a href="/inventory_add.html">Add Inventory</a>
 </div>
 
 <div class="content-wrapper">
@@ -58,7 +58,8 @@
         <input type="checkbox" class="form-check-input" id="customMarkup" name="customMarkup">
         <label for="customMarkup" class="form-check-label">Custom Markup</label>
       </div>
-      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+      <button type="button" class="btn btn-secondary" onclick="closePage()">Close</button>
     </form>
   </main>
 </div>
@@ -143,6 +144,10 @@
       alert('Failed to update inventory item.');
     }
   });
+
+  function closePage() {
+    window.history.back();
+  }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
