@@ -3,100 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Display</title>
+  <title>Inventory Details</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .header {
+      background-color: #20c997;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+    }
+
+    .header button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .container {
+      margin-top: 20px;
+    }
+
+    .inventory-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .inventory-card h2 {
+      color: #20c997;
+    }
+
+    .inventory-card .field {
+      margin-bottom: 15px;
+    }
+
+    .inventory-card .field span {
+      font-weight: bold;
+      color: #343a40;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .buttons .btn {
+      min-width: 100px;
+    }
+  </style>
 </head>
 <body>
-<div class="container mt-5">
-  <h1>Inventory Item Details</h1>
-  <div id="inventoryDetails" class="mt-4">
-    <!-- Inventory details will be dynamically populated here -->
+<div class="header">
+  <h1>Inventory Details</h1>
+  <button onclick="closeDetails()"><i class="fas fa-times"></i> Close</button>
+</div>
+
+<div class="container">
+  <div class="inventory-card">
+    <h2 id="itemName">Item Name</h2>
+    <div class="field"><span>Item ID:</span> <span id="itemID">N/A</span></div>
+    <div class="field"><span>Description:</span> <span id="itemDescription">N/A</span></div>
+    <div class="field"><span>Category:</span> <span id="category">N/A</span></div>
+    <div class="field"><span>Subcategory:</span> <span id="subcategory">N/A</span></div>
+    <div class="field"><span>Current Stock Level:</span> <span id="currentStockLevel">0</span></div>
+    <div class="field"><span>On Order:</span> <span id="onOrder">0</span></div>
+    <div class="field"><span>Supplier Name:</span> <span id="supplierName">N/A</span></div>
+    <div class="field"><span>Purchase Price:</span> <span id="purchasePrice">$0.00</span></div>
+    <div class="field"><span>Markup (%):</span> <span id="markupAmount">0.00</span></div>
+    <div class="field"><span>Custom Sell Price:</span> <span id="customSellPrice">$0.00</span></div>
+    <div class="field"><span>Finalized Sell Price:</span> <span id="finalizedSellPrice">$0.00</span></div>
+    <div class="field"><span>Location:</span> <span id="location">N/A</span></div>
+    <div class="field"><span>Detailed Location:</span> <span id="detailLoc">N/A</span></div>
+    <div class="field"><span>Barcode:</span> <span id="barcode">N/A</span></div>
+    <div class="field"><span>QR Code:</span> <span id="qrCode">N/A</span></div>
+    <div class="field"><span>Reorder Point:</span> <span id="reorderPoint">0</span></div>
+    <div class="field"><span>Alert Threshold:</span> <span id="alertThreshold">0</span></div>
+    <div class="field"><span>Is Active:</span> <span id="isActive">No</span></div>
+    <div class="field"><span>Notes:</span> <span id="notes">N/A</span></div>
   </div>
-  <button onclick="goBack()" class="btn btn-secondary mt-3">Back to List</button>
+
+  <div class="buttons">
+    <button class="btn btn-primary" onclick="editInventory()">Edit</button>
+    <button class="btn btn-primary" onclick="closePage()">Close</button>
+  </div>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const inventoryId = urlParams.get('id');
+  function closePage() {
+    // Attempt to close the current window
+    window.close();
 
+    // Notify the user if the browser blocks the action
+    if (!window.closed) {
+      alert('Unable to close the page. You may need to close it manually.');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const inventoryId = new URLSearchParams(window.location.search).get('id');
     if (!inventoryId) {
       alert('No inventory ID provided.');
       return;
     }
 
-    const inventoryDetailsContainer = document.getElementById('inventoryDetails');
+    try {
+      // Fetch inventory details
+      const response = await axios.get(`/api/inventories/${inventoryId}`);
+      const inventory = response.data;
 
-    // Fetch inventory item details
-    const fetchInventoryDetails = async (id) => {
-      try {
-        const response = await axios.get(`/api/inventories/${id}`);
-        console.log('Fetched inventory details:', response.data); // Debugging
-        return response.data; // Inventory item data
-      } catch (error) {
-        console.error('Error fetching inventory details:', error);
-        alert('Failed to load inventory details.');
-        return null;
-      }
-    };
-
-    // Helper function to format Decimal128 to a number and format with 2 decimal places and a "$" prefix
-    const formatCurrency = (value) => {
-      if (value && value.$numberDecimal !== undefined) {
-        return `$${Number(value.$numberDecimal).toFixed(2)}`;
-      }
-      return `$0.00`; // Default fallback
-    };
-
-    // Render inventory details
-    const renderInventoryDetails = async () => {
-      const inventory = await fetchInventoryDetails(inventoryId);
-
-      if (!inventory) {
-        inventoryDetailsContainer.innerHTML = '<p class="text-danger">Inventory item not found.</p>';
-        return;
-      }
-
-      inventoryDetailsContainer.innerHTML = `
-        <table class="table table-bordered">
-          <tbody>
-            <tr><th>Item ID</th><td>${inventory.itemID || 'N/A'}</td></tr>
-            <tr><th>Description</th><td>${inventory.itemDescription || 'N/A'}</td></tr>
-            <tr><th>Category</th><td>${inventory.category || 'N/A'}</td></tr>
-            <tr><th>Subcategory</th><td>${inventory.subcategory || 'N/A'}</td></tr>
-            <tr><th>Current Stock Level</th><td>${inventory.currentStockLevel !== undefined ? inventory.currentStockLevel : 0}</td></tr>
-            <tr><th>On Order</th><td>${inventory.onOrder !== undefined ? inventory.onOrder : 0}</td></tr>
-            <tr><th>Supplier Name</th><td>${inventory.supplierName || 'N/A'}</td></tr>
-            <tr><th>Purchase Price</th><td>${formatCurrency(inventory.purchasePrice)}</td></tr>
-            <tr><th>Markup (%)</th><td>${Number(inventory.markupAmount?.$numberDecimal || 0).toFixed(2)}</td></tr>
-            <tr><th>Custom Sell Price</th><td>${formatCurrency(inventory.customSellPrice)}</td></tr>
-            <tr><th>Finalized Sell Price</th><td>${formatCurrency(inventory.finalizedSellPrice)}</td></tr>
-            <tr><th>Location</th><td>${inventory.location || 'N/A'}</td></tr>
-            <tr><th>Detailed Location</th><td>${inventory.detailLoc || 'N/A'}</td></tr>
-            <tr><th>Barcode</th><td>${inventory.barcode || 'N/A'}</td></tr>
-            <tr><th>QR Code</th><td>${inventory.qrCode || 'N/A'}</td></tr>
-            <tr><th>Reorder Point</th><td>${inventory.reorderPoint || 0}</td></tr>
-            <tr><th>Alert Threshold</th><td>${inventory.alertThreshold || 0}</td></tr>
-            <tr><th>Is Active</th><td>${inventory.isActive ? 'Yes' : 'No'}</td></tr>
-            <tr><th>Notes</th><td>${inventory.notes || 'N/A'}</td></tr>
-            <tr><th>Total Bought</th><td>${inventory.totalBought || 0}</td></tr>
-            <tr><th>Total Sold</th><td>${inventory.totalSold || 0}</td></tr>
-            <tr><th>Last Edited By</th><td>${inventory.lastEdited || 'N/A'}</td></tr>
-            <tr><th>Last Edited Time</th><td>${inventory.editTime ? new Date(inventory.editTime).toLocaleString() : 'N/A'}</td></tr>
-          </tbody>
-        </table>
-      `;
-    };
-
-    // Back to list function
-    window.goBack = () => {
-      window.location.href = '/inventory_list.html';
-    };
-
-    // Load and render inventory details
-    await renderInventoryDetails();
+      // Populate card with inventory details
+      document.getElementById('itemName').textContent = inventory.itemDescription || 'N/A';
+      document.getElementById('itemID').textContent = inventory.itemID || 'N/A';
+      document.getElementById('itemDescription').textContent = inventory.itemDescription || 'N/A';
+      document.getElementById('category').textContent = inventory.category || 'N/A';
+      document.getElementById('subcategory').textContent = inventory.subcategory || 'N/A';
+      document.getElementById('currentStockLevel').textContent = inventory.currentStockLevel || 0;
+      document.getElementById('onOrder').textContent = inventory.onOrder || 0;
+      document.getElementById('supplierName').textContent = inventory.supplierName || 'N/A';
+      document.getElementById('purchasePrice').textContent = `$${Number(inventory.purchasePrice?.$numberDecimal || 0).toFixed(2)}`;
+      document.getElementById('markupAmount').textContent = Number(inventory.markupAmount?.$numberDecimal || 0).toFixed(2);
+      document.getElementById('customSellPrice').textContent = `$${Number(inventory.customSellPrice?.$numberDecimal || 0).toFixed(2)}`;
+      document.getElementById('finalizedSellPrice').textContent = `$${Number(inventory.finalizedSellPrice?.$numberDecimal || 0).toFixed(2)}`;
+      document.getElementById('location').textContent = inventory.location || 'N/A';
+      document.getElementById('detailLoc').textContent = inventory.detailLoc || 'N/A';
+      document.getElementById('barcode').textContent = inventory.barcode || 'N/A';
+      document.getElementById('qrCode').textContent = inventory.qrCode || 'N/A';
+      document.getElementById('reorderPoint').textContent = inventory.reorderPoint || 0;
+      document.getElementById('alertThreshold').textContent = inventory.alertThreshold || 0;
+      document.getElementById('isActive').textContent = inventory.isActive ? 'Yes' : 'No';
+      document.getElementById('notes').textContent = inventory.notes || 'N/A';
+    } catch (error) {
+      console.error('Error loading inventory data:', error);
+      alert('Failed to load inventory details.');
+    }
   });
+
+  function editInventory() {
+    const inventoryId = new URLSearchParams(window.location.search).get('id');
+    if (inventoryId) {
+      window.location.href = `/inventory_displayedit.html?id=${inventoryId}`;
+    } else {
+      alert('No inventory ID available for editing.');
+    }
+  }
+
+  function closeDetails() {
+    window.close();
+  }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 </html>

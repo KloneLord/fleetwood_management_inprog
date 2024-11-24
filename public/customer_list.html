@@ -164,44 +164,57 @@
 </div>
 <script>
   // Fetch customers
-  async function loadCustomers() {
-    const response = await axios.get('/api/customers');
-    const customers = response.data;
-    const tableBody = document.getElementById('customerTableBody');
-    tableBody.innerHTML = customers.map(customer => `
-            <tr>
-                <td>${customer.customerName}</td>
-                <td>${customer.emailAddress}</td>
-                <td>${customer.phoneNumber}</td>
-                <td>
-                    <button class="btn btn-sm btn-secondary" onclick="viewCustomer('${customer._id}')">View</button>
-                    <button class="btn btn-sm btn-primary" onclick="editCustomer('${customer._id}')">Edit</button>
-                </td>
-                <td><input type="checkbox" value="${customer._id}"></td>
-            </tr>
-        `).join('');
+  // Load inventory items and display them in the table
+  async function loadInventory() {
+    const response = await axios.get('/api/inventories');
+    const inventories = response.data;
+    const tableBody = document.getElementById('inventoryTableBody');
+
+    tableBody.innerHTML = inventories
+            .map(item => `
+      <tr>
+        <td>${item.itemID || 'N/A'}</td>
+        <td>${item.itemDescription || 'N/A'}</td>
+        <td>${item.currentStockLevel !== undefined ? item.currentStockLevel : 0}</td>
+        <td>${item.onOrder !== undefined ? item.onOrder : 0}</td>
+        <td>
+          <button class="btn btn-sm btn-secondary" onclick="viewInventory('${item._id}')">View</button>
+          <button class="btn btn-sm btn-primary" onclick="editInventory('${item._id}')">Edit</button>
+        </td>
+        <td>
+          <input type="checkbox" value="${item._id}">
+        </td>
+      </tr>
+    `).join('');
   }
 
-  // View customer
-  function viewCustomer(customerId) {
-    sessionStorage.setItem('customerId', customerId); // Save customer ID to session storage
+  // View inventory item in a popup
+  function viewInventory(inventoryId) {
+    sessionStorage.setItem('inventoryId', inventoryId); // Save inventory ID to session storage
+
+    // Calculate dimensions and position for the popup window
     const width = Math.floor(window.innerWidth * 0.8); // 80% of screen width
     const height = Math.floor(window.innerHeight * 0.7); // 70% of screen height
-    const left = Math.floor((window.innerWidth - width) / 2); // Center the window horizontally
-    const top = Math.floor((window.innerHeight - height) / 2); // Center the window vertically
+    const left = Math.floor((window.innerWidth - width) / 2); // Center horizontally
+    const top = Math.floor((window.innerHeight - height) / 2); // Center vertically
 
+    // Open a popup for the inventory display page
     window.open(
-            '/customer_display.html', // URL of the new window
+            '/inventory_display.html', // URL of the new window
             '_blank', // Open in a new tab/window
             `width=${width},height=${height},top=${top},left=${left},resizable=yes`
     );
   }
 
-  // Edit customer
-  function editCustomer(customerId) {
-    sessionStorage.setItem('customerId', customerId);
-    window.location.href = '/customer_edit.html';
+  // Edit inventory item
+  function editInventory(inventoryId) {
+    sessionStorage.setItem('inventoryId', inventoryId); // Save inventory ID to session storage
+    window.location.href = '/inventory_edit.html'; // Navigate to the edit page
   }
+
+  // Load the inventory list when the DOM is ready
+  document.addEventListener('DOMContentLoaded', loadInventory);
+
 
   // Delete selected customers
   async function deleteSelected() {

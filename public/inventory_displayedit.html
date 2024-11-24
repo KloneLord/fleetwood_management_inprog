@@ -3,71 +3,313 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Inventory Item (Display)</title>
+  <title>Inventory List</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="styles.css" rel="stylesheet">
 </head>
+
 <body>
-<div class="container mt-5">
-  <h1>Edit Inventory Item</h1>
-  <form id="editDisplayForm">
-    <input type="hidden" id="itemId">
-    <div class="mb-3">
-      <label for="itemDescription" class="form-label">Description</label>
-      <input type="text" id="itemDescription" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label for="category" class="form-label">Category</label>
-      <select id="category" class="form-select" required></select>
-    </div>
-    <div class="mb-3">
-      <label for="purchasePrice" class="form-label">Purchase Price</label>
-      <input type="number" id="purchasePrice" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-  </form>
-</div>
+
+
+
+  <main class="container" style="margin-left: 5%; margin-top: 5%">
+
+      <h1>Edit Inventory Item</h1>
+      <form id="inventoryForm">
+        <!-- ID and Description -->
+        <div class="mb-3">
+          <label for="itemID" class="form-label">Item ID</label>
+          <input type="text" class="form-control" id="itemID" name="itemID" required>
+        </div>
+        <div class="mb-3">
+          <label for="itemDescription" class="form-label">Description</label>
+          <input type="text" class="form-control" id="itemDescription" name="itemDescription" required>
+        </div>
+
+        <!-- Current Stock Levels -->
+        <div class="mb-3">
+          <label for="currentStockLevel" class="form-label">Current Stock Level</label>
+          <input type="number" class="form-control" id="currentStockLevel" name="currentStockLevel" value="0">
+        </div>
+        <div class="mb-3">
+          <label for="onOrder" class="form-label">On Order</label>
+          <input type="number" class="form-control" id="onOrder" name="onOrder" value="0">
+        </div>
+
+        <!-- Categorization -->
+        <div class="mb-3">
+          <label for="categoryDropdown" class="form-label">Category</label>
+          <select class="form-control" id="categoryDropdown" name="category" required>
+            <option value="" disabled>Select a category</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="subCategoryDropdown" class="form-label">Subcategory</label>
+          <select class="form-control" id="subCategoryDropdown" name="subcategory">
+            <option value="" disabled>Select a subcategory</option>
+          </select>
+        </div>
+
+        <!-- Supplier Details -->
+        <div class="mb-3">
+          <label for="supplierName" class="form-label">Supplier Name</label>
+          <input type="text" class="form-control" id="supplierName" name="supplierName">
+        </div>
+
+        <!-- Cost Price and Markup -->
+        <div class="mb-3">
+          <label for="purchasePrice" class="form-label">Purchase Price</label>
+          <input type="text" class="form-control" id="purchasePrice" name="purchasePrice" value="0.00" required>
+        </div>
+        <div class="mb-3">
+          <label for="markupAmount" class="form-label">Markup (%)</label>
+          <input type="text" class="form-control" id="markupAmount" name="markupAmount" value="0.00">
+        </div>
+        <div class="mb-3">
+          <label for="customSellPrice" class="form-label">Custom Sell Price</label>
+          <input type="text" class="form-control" id="customSellPrice" name="customSellPrice" value="0.00">
+        </div>
+        <div class="mb-3">
+          <label for="finalizedSellPrice" class="form-label">Finalized Sell Price</label>
+          <input type="text" class="form-control" id="finalizedSellPrice" name="finalizedSellPrice" value="0.00" readonly>
+        </div>
+
+        <!-- Location and Notes -->
+        <div class="mb-3">
+          <label for="location" class="form-label">Location</label>
+          <input type="text" class="form-control" id="location" name="location">
+        </div>
+        <div class="mb-3">
+          <label for="detailLoc" class="form-label">Detailed Location</label>
+          <input type="text" class="form-control" id="detailLoc" name="detailLoc">
+        </div>
+        <div class="mb-3">
+          <label for="barcode" class="form-label">Barcode</label>
+          <input type="text" class="form-control" id="barcode" name="barcode">
+        </div>
+        <div class="mb-3">
+          <label for="qrCode" class="form-label">QR Code</label>
+          <input type="text" class="form-control" id="qrCode" name="qrCode">
+        </div>
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notes</label>
+          <textarea class="form-control" id="notes" name="notes"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <button type="button" id="backButton" class="btn btn-secondary">Back</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+
+        <div id="responseMessage" class="mt-3"></div>
+      </form>
+  </main>
+
 
 <script>
-  async function loadItem() {
-    const id = sessionStorage.getItem('inventoryItemId');
-    if (!id) return;
+  document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const inventoryId = urlParams.get('id');
 
-    const response = await axios.get(`/api/inventory/${id}`);
-    const item = response.data;
+    if (!inventoryId) {
+      alert('No inventory ID provided.');
+      return;
+    }
 
-    document.getElementById('itemId').value = item._id;
-    document.getElementById('itemDescription').value = item.itemDescription;
-    document.getElementById('purchasePrice').value = item.purchasePrice;
+    const fetchInventoryDetails = async (id) => {
+      try {
+        const response = await axios.get(`/api/inventories/${id}`);
+        const inventory = response.data;
 
-    await populateCategories(item.category);
-  }
+        // Parse Decimal128 values
+        inventory.purchasePrice = parseFloat(inventory.purchasePrice.$numberDecimal || inventory.purchasePrice);
+        inventory.markupAmount = parseFloat(inventory.markupAmount.$numberDecimal || inventory.markupAmount);
+        inventory.customSellPrice = parseFloat(inventory.customSellPrice.$numberDecimal || inventory.customSellPrice);
+        inventory.finalizedSellPrice = parseFloat(inventory.finalizedSellPrice.$numberDecimal || inventory.finalizedSellPrice);
 
-  async function populateCategories(selectedCategory) {
-    const response = await axios.get('/api/categories');
-    const categories = response.data.categories;
-
-    const categoryDropdown = document.getElementById('category');
-    categoryDropdown.innerHTML = categories.map(cat => `
-      <option value="${cat.name}" ${cat.name === selectedCategory ? 'selected' : ''}>${cat.name}</option>`).join('');
-  }
-
-  document.getElementById('editDisplayForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const id = document.getElementById('itemId').value;
-    const data = {
-      itemDescription: document.getElementById('itemDescription').value,
-      category: document.getElementById('category').value,
-      purchasePrice: document.getElementById('purchasePrice').value,
+        return inventory;
+      } catch (error) {
+        console.error('Error fetching inventory details:', error);
+        alert('Failed to load inventory details.');
+      }
     };
 
-    await axios.put(`/api/inventory/${id}`, data);
-    alert('Item updated successfully!');
-    window.history.back();
-  });
+    const populateDropdowns = async () => {
+      try {
+        const response = await axios.get('/api/categories');
+        const { categories, subcategories } = response.data;
 
-  document.addEventListener('DOMContentLoaded', loadItem);
+        const categoryDropdown = document.getElementById('categoryDropdown');
+        const subCategoryDropdown = document.getElementById('subCategoryDropdown');
+
+        categoryDropdown.innerHTML = '<option value="" disabled>Select a category</option>';
+        categories.forEach((category) => {
+          const option = document.createElement('option');
+          option.value = category._id;
+          option.textContent = category.name;
+          categoryDropdown.appendChild(option);
+        });
+
+        categoryDropdown.addEventListener('change', () => {
+          const selectedCategoryId = categoryDropdown.value;
+          const filteredSubcategories = subcategories.filter(sub => sub.parentId === selectedCategoryId);
+
+          subCategoryDropdown.innerHTML = '<option value="" disabled>Select a subcategory</option>';
+          filteredSubcategories.forEach((subcategory) => {
+            const option = document.createElement('option');
+            option.value = subcategory._id;
+            option.textContent = subcategory.name;
+            subCategoryDropdown.appendChild(option);
+          });
+        });
+      } catch (error) {
+        console.error('Error populating dropdowns:', error);
+      }
+    };
+
+    const populateForm = (data) => {
+      document.getElementById('itemID').value = data.itemID || '';
+      document.getElementById('itemDescription').value = data.itemDescription || '';
+      document.getElementById('currentStockLevel').value = data.currentStockLevel || 0;
+      document.getElementById('onOrder').value = data.onOrder || 0;
+      document.getElementById('supplierName').value = data.supplierName || '';
+      document.getElementById('purchasePrice').value = data.purchasePrice.toFixed(2) || '0.00';
+      document.getElementById('markupAmount').value = data.markupAmount.toFixed(2) || '0.00';
+      document.getElementById('customSellPrice').value = data.customSellPrice.toFixed(2) || '0.00';
+      document.getElementById('finalizedSellPrice').value = data.finalizedSellPrice.toFixed(2) || '0.00';
+      document.getElementById('location').value = data.location || '';
+      document.getElementById('detailLoc').value = data.detailLoc || '';
+      document.getElementById('barcode').value = data.barcode || '';
+      document.getElementById('qrCode').value = data.qrCode || '';
+      document.getElementById('notes').value = data.notes || '';
+
+      const categoryDropdown = document.getElementById('categoryDropdown');
+      const subCategoryDropdown = document.getElementById('subCategoryDropdown');
+      categoryDropdown.value = data.categoryId || '';
+      categoryDropdown.dispatchEvent(new Event('change'));
+      setTimeout(() => {
+        subCategoryDropdown.value = data.subcategoryId || '';
+      }, 200);
+    };
+
+    const handleUpdate = async (event) => {
+      event.preventDefault();
+      const formData = {
+        itemID: document.getElementById('itemID').value,
+        itemDescription: document.getElementById('itemDescription').value,
+        currentStockLevel: parseInt(document.getElementById('currentStockLevel').value) || 0,
+        onOrder: parseInt(document.getElementById('onOrder').value) || 0,
+        categoryId: document.getElementById('categoryDropdown').value,
+        subcategoryId: document.getElementById('subCategoryDropdown').value,
+        supplierName: document.getElementById('supplierName').value,
+        purchasePrice: parseFloat(document.getElementById('purchasePrice').value).toFixed(2),
+        markupAmount: parseFloat(document.getElementById('markupAmount').value).toFixed(2),
+        customSellPrice: parseFloat(document.getElementById('customSellPrice').value).toFixed(2),
+        finalizedSellPrice: parseFloat(document.getElementById('finalizedSellPrice').value).toFixed(2),
+        location: document.getElementById('location').value,
+        detailLoc: document.getElementById('detailLoc').value,
+        barcode: document.getElementById('barcode').value,
+        qrCode: document.getElementById('qrCode').value,
+        notes: document.getElementById('notes').value,
+      };
+
+      try {
+        await axios.put(`/api/inventories/${inventoryId}`, formData);
+        document.getElementById('responseMessage').textContent = 'Item updated successfully!';
+        document.getElementById('responseMessage').className = 'alert alert-success';
+      } catch (error) {
+        console.error('Error updating inventory:', error);
+        document.getElementById('responseMessage').textContent = 'Failed to update item. Please try again.';
+        document.getElementById('responseMessage').className = 'alert alert-danger';
+      }
+    };
+
+    document.getElementById('backButton').addEventListener('click', () => {
+      window.location.href = '/inventory_list.html';
+    });
+
+    document.getElementById('inventoryForm').addEventListener('submit', handleUpdate);
+
+    await populateDropdowns();
+    const inventoryDetails = await fetchInventoryDetails(inventoryId);
+    populateForm(inventoryDetails);
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sidebar Script -->
+<script src="/utils/sidebar.js"></script>
+
+<script>
+  // Fetch session data from the server
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+
+      // Log session data
+      console.log('Session data received:', data);
+
+      // Update the username
+      const usernameElement = document.getElementById('username');
+      if (usernameElement) {
+        usernameElement.innerText = data.username;
+      }
+
+      // Start the session timer
+      startSessionTimer(data.loginTime);
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
+
+  // Start a session duration timer
+  function startSessionTimer(loginTime) {
+    const loginTimestamp = new Date(loginTime).getTime();
+
+    if (isNaN(loginTimestamp)) {
+      console.error('Invalid loginTime:', loginTime);
+      return;
+    }
+
+    setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - loginTimestamp) / 1000);
+      const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+
+      const durationElement = document.getElementById('session-duration');
+      if (durationElement) {
+        durationElement.innerText = `${hours}:${minutes}:${seconds}`;
+      } else {
+        console.error('session-duration element not found');
+      }
+    }, 1000);
+  }
+
+  // Start a live clock
+  function startLiveClock() {
+    setInterval(() => {
+      const now = new Date();
+      const clockElement = document.getElementById('live-clock');
+      if (clockElement) {
+        clockElement.innerText = now.toLocaleTimeString();
+      }
+    }, 1000);
+  }
+
+  // Initialize all functions on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    startLiveClock();
+  });
 </script>
 </body>
 </html>

@@ -3,102 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Inventory Item</title>
+  <title>Inventory List</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="styles.css" rel="stylesheet">
 </head>
+
 <body>
-<main class="container mt-5">
-  <h1>Edit Inventory Item</h1>
-  <form id="inventoryForm">
-    <!-- ID and Description -->
-    <div class="mb-3">
-      <label for="itemID" class="form-label">Item ID</label>
-      <input type="text" class="form-control" id="itemID" name="itemID" required>
-    </div>
-    <div class="mb-3">
-      <label for="itemDescription" class="form-label">Description</label>
-      <input type="text" class="form-control" id="itemDescription" name="itemDescription" required>
+<!-- Top Navigation -->
+<div class="topnav" id="topnav">
+  <div class="container-fluid">
+    <!-- User Info -->
+    <div id="user-info">
+      Welcome <span id="username">User</span>, logged in for
+      <span id="session-duration">00:00:00</span>
     </div>
 
-    <!-- Current Stock Levels -->
-    <div class="mb-3">
-      <label for="currentStockLevel" class="form-label">Current Stock Level</label>
-      <input type="number" class="form-control" id="currentStockLevel" name="currentStockLevel" value="0">
+    <!-- Live Clock + Icons -->
+    <div class="icon-section">
+      <div>
+        Current Time: <span id="live-clock">Loading...</span>
+      </div>
+      <!-- Notifications Icon -->
+      <div class="icon-wrapper">
+        <i class="fas fa-bell"></i>
+        <span class="badge bg-danger">3</span>
+      </div>
+      <!-- Messages Icon -->
+      <div class="icon-wrapper">
+        <i class="fas fa-envelope"></i>
+        <span class="badge bg-primary">5</span>
+      </div>
     </div>
-    <div class="mb-3">
-      <label for="onOrder" class="form-label">On Order</label>
-      <input type="number" class="form-control" id="onOrder" name="onOrder" value="0">
-    </div>
+  </div>
+</div>
 
-    <!-- Categorization -->
-    <div class="mb-3">
-      <label for="categoryDropdown" class="form-label">Category</label>
-      <select class="form-control" id="categoryDropdown" name="category" required>
-        <option value="" disabled>Select a category</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label for="subCategoryDropdown" class="form-label">Subcategory</label>
-      <select class="form-control" id="subCategoryDropdown" name="subcategory">
-        <option value="" disabled>Select a subcategory</option>
-      </select>
-    </div>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar"></div>
 
-    <!-- Supplier Details -->
-    <div class="mb-3">
-      <label for="supplierName" class="form-label">Supplier Name</label>
-      <input type="text" class="form-control" id="supplierName" name="supplierName">
-    </div>
+<!-- Main Content -->
+<div class="content-wrapper">
+  <main class="container">
+    <main class="container mt-5">
+      <h1>Edit Inventory Item</h1>
+      <form id="inventoryForm">
+        <!-- ID and Description -->
+        <div class="mb-3">
+          <label for="itemID" class="form-label">Item ID</label>
+          <input type="text" class="form-control" id="itemID" name="itemID" required>
+        </div>
+        <div class="mb-3">
+          <label for="itemDescription" class="form-label">Description</label>
+          <input type="text" class="form-control" id="itemDescription" name="itemDescription" required>
+        </div>
 
-    <!-- Cost Price and Markup -->
-    <div class="mb-3">
-      <label for="purchasePrice" class="form-label">Purchase Price</label>
-      <input type="text" class="form-control" id="purchasePrice" name="purchasePrice" value="0.00" required>
-    </div>
-    <div class="mb-3">
-      <label for="markupAmount" class="form-label">Markup (%)</label>
-      <input type="text" class="form-control" id="markupAmount" name="markupAmount" value="0.00">
-    </div>
-    <div class="mb-3">
-      <label for="customSellPrice" class="form-label">Custom Sell Price</label>
-      <input type="text" class="form-control" id="customSellPrice" name="customSellPrice" value="0.00">
-    </div>
-    <div class="mb-3">
-      <label for="finalizedSellPrice" class="form-label">Finalized Sell Price</label>
-      <input type="text" class="form-control" id="finalizedSellPrice" name="finalizedSellPrice" value="0.00" readonly>
-    </div>
+        <!-- Current Stock Levels -->
+        <div class="mb-3">
+          <label for="currentStockLevel" class="form-label">Current Stock Level</label>
+          <input type="number" class="form-control" id="currentStockLevel" name="currentStockLevel" value="0">
+        </div>
+        <div class="mb-3">
+          <label for="onOrder" class="form-label">On Order</label>
+          <input type="number" class="form-control" id="onOrder" name="onOrder" value="0">
+        </div>
 
-    <!-- Location and Notes -->
-    <div class="mb-3">
-      <label for="location" class="form-label">Location</label>
-      <input type="text" class="form-control" id="location" name="location">
-    </div>
-    <div class="mb-3">
-      <label for="detailLoc" class="form-label">Detailed Location</label>
-      <input type="text" class="form-control" id="detailLoc" name="detailLoc">
-    </div>
-    <div class="mb-3">
-      <label for="barcode" class="form-label">Barcode</label>
-      <input type="text" class="form-control" id="barcode" name="barcode">
-    </div>
-    <div class="mb-3">
-      <label for="qrCode" class="form-label">QR Code</label>
-      <input type="text" class="form-control" id="qrCode" name="qrCode">
-    </div>
-    <div class="mb-3">
-      <label for="notes" class="form-label">Notes</label>
-      <textarea class="form-control" id="notes" name="notes"></textarea>
-    </div>
+        <!-- Categorization -->
+        <div class="mb-3">
+          <label for="categoryDropdown" class="form-label">Category</label>
+          <select class="form-control" id="categoryDropdown" name="category" required>
+            <option value="" disabled>Select a category</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="subCategoryDropdown" class="form-label">Subcategory</label>
+          <select class="form-control" id="subCategoryDropdown" name="subcategory">
+            <option value="" disabled>Select a subcategory</option>
+          </select>
+        </div>
 
-    <div class="d-flex justify-content-between">
-      <button type="button" id="backButton" class="btn btn-secondary">Back</button>
-      <button type="submit" class="btn btn-primary">Update</button>
-    </div>
+        <!-- Supplier Details -->
+        <div class="mb-3">
+          <label for="supplierName" class="form-label">Supplier Name</label>
+          <input type="text" class="form-control" id="supplierName" name="supplierName">
+        </div>
 
-    <div id="responseMessage" class="mt-3"></div>
-  </form>
-</main>
+        <!-- Cost Price and Markup -->
+        <div class="mb-3">
+          <label for="purchasePrice" class="form-label">Purchase Price</label>
+          <input type="text" class="form-control" id="purchasePrice" name="purchasePrice" value="0.00" required>
+        </div>
+        <div class="mb-3">
+          <label for="markupAmount" class="form-label">Markup (%)</label>
+          <input type="text" class="form-control" id="markupAmount" name="markupAmount" value="0.00">
+        </div>
+        <div class="mb-3">
+          <label for="customSellPrice" class="form-label">Custom Sell Price</label>
+          <input type="text" class="form-control" id="customSellPrice" name="customSellPrice" value="0.00">
+        </div>
+        <div class="mb-3">
+          <label for="finalizedSellPrice" class="form-label">Finalized Sell Price</label>
+          <input type="text" class="form-control" id="finalizedSellPrice" name="finalizedSellPrice" value="0.00" readonly>
+        </div>
+
+        <!-- Location and Notes -->
+        <div class="mb-3">
+          <label for="location" class="form-label">Location</label>
+          <input type="text" class="form-control" id="location" name="location">
+        </div>
+        <div class="mb-3">
+          <label for="detailLoc" class="form-label">Detailed Location</label>
+          <input type="text" class="form-control" id="detailLoc" name="detailLoc">
+        </div>
+        <div class="mb-3">
+          <label for="barcode" class="form-label">Barcode</label>
+          <input type="text" class="form-control" id="barcode" name="barcode">
+        </div>
+        <div class="mb-3">
+          <label for="qrCode" class="form-label">QR Code</label>
+          <input type="text" class="form-control" id="qrCode" name="qrCode">
+        </div>
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notes</label>
+          <textarea class="form-control" id="notes" name="notes"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <button type="button" id="backButton" class="btn btn-secondary">Back</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+
+        <div id="responseMessage" class="mt-3"></div>
+      </form>
+    </main>
+
+
+  </main>
+</div>
+
 
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
@@ -227,6 +269,80 @@
     await populateDropdowns();
     const inventoryDetails = await fetchInventoryDetails(inventoryId);
     populateForm(inventoryDetails);
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sidebar Script -->
+<script src="/utils/sidebar.js"></script>
+
+<script>
+  // Fetch session data from the server
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+
+      // Log session data
+      console.log('Session data received:', data);
+
+      // Update the username
+      const usernameElement = document.getElementById('username');
+      if (usernameElement) {
+        usernameElement.innerText = data.username;
+      }
+
+      // Start the session timer
+      startSessionTimer(data.loginTime);
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
+
+  // Start a session duration timer
+  function startSessionTimer(loginTime) {
+    const loginTimestamp = new Date(loginTime).getTime();
+
+    if (isNaN(loginTimestamp)) {
+      console.error('Invalid loginTime:', loginTime);
+      return;
+    }
+
+    setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - loginTimestamp) / 1000);
+      const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+
+      const durationElement = document.getElementById('session-duration');
+      if (durationElement) {
+        durationElement.innerText = `${hours}:${minutes}:${seconds}`;
+      } else {
+        console.error('session-duration element not found');
+      }
+    }, 1000);
+  }
+
+  // Start a live clock
+  function startLiveClock() {
+    setInterval(() => {
+      const now = new Date();
+      const clockElement = document.getElementById('live-clock');
+      if (clockElement) {
+        clockElement.innerText = now.toLocaleTimeString();
+      }
+    }, 1000);
+  }
+
+  // Initialize all functions on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    startLiveClock();
   });
 </script>
 </body>
