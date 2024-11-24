@@ -1,60 +1,72 @@
 import Inventory from '../models/inventoryModel.js';
 
 // List all inventory items
-export const listInventoryItems = async (req, res) => {
+export const listInventories = async (req, res) => {
     try {
-        const inventoryItems = await Inventory.find({}, 'itemID itemDescription currentStockLevel');
-        res.json(inventoryItems);
+        const inventories = await Inventory.find({}, 'itemID itemDescription category subcategory');
+        res.json(inventories);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Failed to fetch inventory items' });
+        res.status(500).json({ error: 'Failed to fetch inventories' });
     }
 };
 
-// Get inventory item by ID
-export const getInventoryItem = async (req, res) => {
+// Get inventory by ID
+export const getInventory = async (req, res) => {
     try {
-        const inventoryItem = await Inventory.findById(req.params.id);
-        if (!inventoryItem) return res.status(404).json({ error: 'Item not found' });
-        res.json(inventoryItem);
+        const inventory = await Inventory.findById(req.params.id);
+        if (!inventory) return res.status(404).json({ error: 'Inventory item not found' });
+        res.json(inventory);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Failed to fetch item' });
+        res.status(500).json({ error: 'Failed to fetch inventory' });
     }
 };
 
-// Add inventory item
-export const addInventoryItem = async (req, res) => {
+
+// Edit inventory by ID
+export const editInventory = async (req, res) => {
     try {
-        const inventoryItem = new Inventory(req.body);
-        await inventoryItem.save();
-        res.status(201).json({ message: 'Item added successfully' });
+        const inventory = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!inventory) return res.status(404).json({ error: 'Inventory item not found' });
+        res.json({ message: 'Inventory item updated successfully', inventory });
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Failed to add item' });
+        res.status(500).json({ error: 'Failed to update inventory item' });
     }
 };
 
-// Edit inventory item
-export const editInventoryItem = async (req, res) => {
-    try {
-        const inventoryItem = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!inventoryItem) return res.status(404).json({ error: 'Item not found' });
-        res.json({ message: 'Item updated successfully' });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Failed to update item' });
-    }
-};
-
-// Delete inventory items
-export const deleteInventoryItems = async (req, res) => {
+// Delete multiple inventory items
+export const deleteInventories = async (req, res) => {
     try {
         const { ids } = req.body;
         await Inventory.deleteMany({ _id: { $in: ids } });
-        res.json({ message: 'Items deleted successfully' });
+        res.json({ message: 'Inventory items deleted successfully' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({ error: 'Failed to delete items' });
+        res.status(500).json({ error: 'Failed to delete inventory items' });
+    }
+};
+
+// Add a new inventory item
+export const addInventory = async (req, res) => {
+    try {
+        // Use the request body to create a new inventory item
+        const newInventoryData = req.body;
+
+        // Explicitly initialize missing fields to their default values if not present
+        if (typeof newInventoryData.totalBought === 'undefined') {
+            newInventoryData.totalBought = 0;
+        }
+        if (typeof newInventoryData.totalSold === 'undefined') {
+            newInventoryData.totalSold = 0;
+        }
+
+        const inventory = new Inventory(newInventoryData);
+        await inventory.save();
+        res.status(201).json({ message: 'Inventory item added successfully', inventory });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Failed to add inventory item' });
     }
 };

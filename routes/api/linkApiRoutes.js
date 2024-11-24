@@ -167,7 +167,7 @@ const linksByRole = {
             active: false,
             subItems: [
                 { name: 'List', url: '/inventory_list.html' },
-                { name: 'Add/Edit', url: '/inventory_edit.html' },
+                { name: 'Add', url: '/inventory_add.html' },
             ],
         },
         {

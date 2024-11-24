@@ -3,267 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Customer</title>
+  <title>Add Inventory Item</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="/styles.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
-    .button-container {
-      display: flex;
-      flex-direction: column; /* Stack buttons vertically */
-      gap: 1rem; /* Add space between the buttons */
-      margin-top: 2rem; /* Optional: Add space above the button container */
+    .hidden {
+      display: none;
     }
-    .form-group {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
+    .mini-window {
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
     }
-
-    .form-group label {
-      width: 20vh;
-      text-align: right;
-      margin-right: 1rem; /* Space between label and input */
+    .custom-divider {
+      border-top: 2px solid #ccc;
+      margin: 20px 0;
     }
-
-    .form-group input {
-      width: 50vh;
-    }
-
-    body {
-      background-color: #f4f6f9;
-    }
-
-    .sidebar {
-      height: 100vh; /* Full height */
-      position: fixed;
-      top: 70px; /* Align with topnav */
-      left: 0;
-      z-index: 1;
-      background-color: #343a40; /* Dark sidebar */
-      color: #fff;
-      border-right: 1px solid #ddd;
-      width: 200px;
-      font-size: 14px;
-    }
-
-    .sidebar a {
-      color: #adb5bd;
-      text-decoration: none;
-      display: block;
-      padding: 10px 15px;
-      transition: background-color 0.2s, color 0.2s;
-    }
-
-    .sidebar a:hover {
-      background-color: #495057; /* Slight hover effect */
-      color: #fff;
-    }
-
-    .sidebar a.active {
-      background-color: #20c997; /* Teal for active link */
-      color: #fff;
-    }
-
-    .topnav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 2;
-      background-color: #20c997; /* Teal for topnav */
-      color: #fff;
-      height: 70px;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .topnav .container-fluid {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 100%;
-    }
-
-    .content-wrapper {
-      margin-top: 70px;
-      margin-left: 200px;
+    .form-box {
+      border: 2px solid #ccc;
       padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 100%;
     }
 
-    @media (max-width: 991.98px) {
-      .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-      }
-
-      .content-wrapper {
-        margin-left: 0;
-        margin-top: 140px;
-      }
+    .form-box h3 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #333;
     }
 
-    .icon-section {
-      display: flex;
-      align-items: center;
-      gap: 20px;
+    .form-box label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+      color: #555;
     }
 
-    .icon-section .badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      font-size: 0.7rem;
+    .form-box input {
+      width: calc(100% - 12px);
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
-    .line-spacer {
+
+    .form-box button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: #fff;
       border: none;
-      height: 2px; /* Thickness of the line */
-      background-color: #ccc; /* Line color */
-      margin: 1rem 0; /* Space above and below the line */
-    }
-    .icon-wrapper {
-      position: relative;
-      font-size: 1.5rem;
+      border-radius: 4px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
 
-    .icon-wrapper:hover {
-      color: #fff; /* Slight hover effect */
+    .form-box button:hover {
+      background-color: #0056b3;
     }
+
   </style>
 </head>
 <body>
-<!-- Top Navigation -->
-<div class="topnav" id="topnav">
-  <div class="container-fluid">
-    <!-- User Info -->
-    <div id="user-info">
-      Welcome <span id="username">User</span>, logged in for
-      <span id="session-duration">00:00:00</span>
-    </div>
+<main class="container">
+  <div class="container mt-5">
+    <h1>Add an Inventory Item</h1>
 
-    <!-- Live Clock + Icons -->
-    <div class="icon-section">
-      <div>
-        Current Time: <span id="live-clock">Loading...</span>
+    <form id="inventoryForm">
+
+      <!-- ID and Description -->
+      <div class="form-box">
+        <strong>ID and Description</strong>
+        <div class="mb-3">
+          <label for="itemID" class="form-label">Item ID</label>
+          <input type="text" class="form-control" id="itemID" name="itemID" required>
+        </div>
+        <div class="mb-3">
+          <label for="itemDescription" class="form-label">Description</label>
+          <input type="text" class="form-control" id="itemDescription" name="itemDescription" required>
+        </div>
+        <div class="custom-divider"></div>
       </div>
-      <!-- Notifications Icon -->
-      <div class="icon-wrapper">
-        <i class="fas fa-bell"></i>
-        <span class="badge bg-danger">3</span>
-      </div>
-      <!-- Messages Icon -->
-      <div class="icon-wrapper">
-        <i class="fas fa-envelope"></i>
-        <span class="badge bg-primary">5</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar"></div>
-
-<!-- Main Content -->
-<div class="content-wrapper">
-  <main class="container">
-    <div class="container mt-5">
-      <h1>Add Inventory Item</h1>
-        <form id="inventoryForm">
-          <!-- Identification -->
-          <div class="mb-3">
-            <label for="itemID" class="form-label">Item ID</label>
-            <input type="text" class="form-control" id="itemID" name="itemID" required>
-          </div>
-          <div class="mb-3">
-            <label for="itemDescription" class="form-label">Description</label>
-            <input type="text" class="form-control" id="itemDescription" name="itemDescription" required>
-          </div>
 
 
-          <!-- Stock Details -->
+      <div class="form-box">
+
+        <!-- Current Stock Levels -->
+        <div>
+          <strong>Current Stock Levels</strong>
           <div class="mb-3">
             <label for="currentStockLevel" class="form-label">Current Stock Level</label>
-            <input type="number" class="form-control" id="currentStockLevel" name="currentStockLevel" required>
+            <input type="number" class="form-control" id="currentStockLevel" name="currentStockLevel" value="0">
           </div>
           <div class="mb-3">
             <label for="onOrder" class="form-label">On Order</label>
-            <input type="number" class="form-control" id="onOrder" name="onOrder">
+            <input type="number" class="form-control" id="onOrder" name="onOrder" value="0">
           </div>
+          <div class="custom-divider"></div>
+        </div>
+      </div>
 
-          <!-- Categorization -->
-          <!-- Category Dropdown -->
+
+      <div class="form-box">
+        <!-- Categorization -->
+        <div>
+          <strong>Categorization</strong>
           <div class="mb-3">
             <label for="categoryDropdown" class="form-label">Category</label>
             <select class="form-control" id="categoryDropdown" name="category" required>
               <option value="" disabled selected>Select a category</option>
-              <!-- Categories will be populated dynamically -->
             </select>
           </div>
-
-          <!-- Add Category Checkbox -->
-          <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="addCategorySelect" name="addCategorySelect">
-            <label class="form-check-label" for="addCategorySelect">Add a category</label>
-          </div>
-
-          <!-- Add Category Input -->
-          <div class="mb-3" id="addCategoryContainer" style="display: none;">
-            <label for="addCategory" class="form-label">New Category</label>
-            <input type="text" class="form-control" id="addCategory" name="addCategory">
-          </div>
-
-          <!-- Subcategory Dropdown -->
           <div class="mb-3">
             <label for="subCategoryDropdown" class="form-label">Subcategory</label>
             <select class="form-control" id="subCategoryDropdown" name="subcategory">
               <option value="" disabled selected>Select a subcategory</option>
-              <!-- Subcategories will be populated dynamically -->
             </select>
+            <button type="button" id="addSubCategoryBtn" class="btn btn-secondary mt-2">Add/Edit Categories</button>
           </div>
-
-          <!-- Add Subcategory Checkbox -->
-          <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="addSubCategorySelect" name="addSubCategorySelect">
-            <label class="form-check-label" for="addSubCategorySelect">Add a subcategory</label>
-          </div>
-
-          <!-- Add Subcategory Input -->
-          <div class="mb-3" id="addSubCategoryContainer" style="display: none;">
-            <label for="addSubCategory" class="form-label">New Subcategory</label>
-            <input type="text" class="form-control" id="addSubCategory" name="addSubCategory">
-          </div>
+          <div class="custom-divider"></div>
+        </div>
+      </div>
 
 
-
-
-          <!-- Supplier Details -->
+      <div class="form-box">
+        <!-- Supplier Details -->
+        <div>
+          <strong>Supplier Details</strong>
           <div class="mb-3">
             <label for="supplierName" class="form-label">Supplier Name</label>
             <input type="text" class="form-control" id="supplierName" name="supplierName">
           </div>
+          <div class="custom-divider"></div>
+        </div>
+      </div>
 
 
-          <!-- Pricing -->
+      <div class="form-box">
+        <!-- Cost Price and Markup -->
+        <div>
+          <strong>Cost Price and Markup</strong>
           <div class="mb-3">
             <label for="purchasePrice" class="form-label">Purchase Price</label>
-            <input type="number" class="form-control" id="purchasePrice" name="purchasePrice" required>
-          </div>
-          <div class="mb-3">
-            <label for="sellingPrice" class="form-label">Selling Price</label>
-            <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" required>
-          </div>
-          <div class="mb-3">
-            <label for="markupAmount" class="form-label">Mark up</label>
-            <input type="number" class="form-control" id="markupAmount" name="markupAmount" required>
+            <input type="number" class="form-control" id="purchasePrice" name="purchasePrice" value="0.00" required>
           </div>
           <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="customMarkup" name="customMarkup" checked>
-            <label class="form-check-label" for="isActive">Use custom markup</label>
+            <input type="checkbox"  style="max-width: 20px " class="form-check-input" id="systemsMarkupCheckbox">
+            <label for="systemsMarkupCheckbox" class="form-check-label">Use the markup presets</label>
+            <input type="checkbox"  style="max-width: 20px "class="form-check-input" id="customSellCheckbox">
+            <label for="customSellCheckbox" class="form-check-label">Custom sell price.</label>
           </div>
-          <!-- Location and Storage -->
+          <div class="mb-3">
+            <label for="markupDropdown" class="form-label">Markup</label>
+            <select id="markupDropdown" class="form-select" name="markupDropdown">
+              <option value="" disabled selected>Select a markup</option>
+              <!-- Markups will be populated dynamically -->
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="markupAmount" class="form-label">Markup (%)</label>
+            <input type="number" class="form-control" id="markupAmount" name="markupAmount"  value="0" disabled>
+          </div>
+
+          <div class="form-check mb-3">
+          </div>
+          <div id="customSellPriceWindow" class="mini-window hidden">
+            <div class="mb-3">
+              <label for="customSellPrice" class="form-label"  >Enter your own sell value</label>
+              <input type="number" class="form-control" id="customSellPrice" value="0.00" name="customSellPrice">
+            </div>
+          </div>
+
+          <div class="form-check mb-3">
+            <button type="button" id="addMarkupBtn" class="btn btn-secondary mt-2">Add Markups</button>
+          </div>
+
+          <div id="finalizedSellWindow" class="mini-window">
+            <div>
+              <strong>Finalized Sell Price:</strong> $<span id="finalizedSellPriceDisplay">0.00</span>
+            </div>
+          </div>
+
+      </div>
+      </div>
+
+      <div class="form-box">
+        <!-- Location in Warehouse -->
+        <div>
+          <strong>Location in Warehouse</strong>
           <div class="mb-3">
             <label for="location" class="form-label">Location</label>
             <input type="text" class="form-control" id="location" name="location">
@@ -272,9 +202,15 @@
             <label for="detailLoc" class="form-label">Detailed Location</label>
             <input type="text" class="form-control" id="detailLoc" name="detailLoc">
           </div>
+          <div class="custom-divider"></div>
+        </div>
+      </div>
 
 
-          <!-- Barcode and QR Code Metadata -->
+      <div class="form-box">
+        <!-- Barcode and QR Code -->
+        <div>
+          <strong>Barcode and QR Code</strong>
           <div class="mb-3">
             <label for="barcode" class="form-label">Barcode</label>
             <input type="text" class="form-control" id="barcode" name="barcode">
@@ -283,128 +219,208 @@
             <label for="qrCode" class="form-label">QR Code</label>
             <input type="text" class="form-control" id="qrCode" name="qrCode">
           </div>
+          <div class="custom-divider"></div>
+        </div>
+      </div>
 
-          <!-- Audit and Notifications -->
+
+      <div class="form-box">
+        <!-- Auto Add to Order and Notifications -->
+        <div>
+          <strong>Automatic Add to Order List and Notifications</strong>
           <div class="mb-3">
             <label for="reorderPoint" class="form-label">Reorder Point</label>
-            <input type="number" class="form-control" id="reorderPoint" name="reorderPoint">
+            <input type="number" class="form-control" id="reorderPoint" name="reorderPoint" value="0">
           </div>
           <div class="mb-3">
             <label for="alertThreshold" class="form-label">Alert Threshold</label>
-            <input type="number" class="form-control" id="alertThreshold" name="alertThreshold">
+            <input type="number" class="form-control" id="alertThreshold" name="alertThreshold" value="0">
           </div>
+          </div>
+      </div>
+          <div class="form-box">
           <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="isActive" name="isActive" checked>
+            <input type="checkbox" style="max-width: 20px" class="form-check-input" id="isActive" name="isActive" checked>
             <label class="form-check-label" for="isActive">Is Active</label>
           </div>
+          <div class="custom-divider"></div>
+        </div>
 
-          <!-- Optional Fields -->
+
+
+      <div class="form-box">
+        <!-- Image and Notes -->
+        <div>
+          <strong>Image and Notes</strong>
           <div class="mb-3">
-            <label for="imageURL" class="form-label">Image URL</label>
-            <input type="text" class="form-control" id="imageURL" name="imageURL">
+            <label for="imageUpload" class="form-label">Image URL</label>
+            <input type="file" class="form-control" id="imageUpload" name="imageUpload" accept="image/*">
           </div>
           <div class="mb-3">
             <label for="notes" class="form-label">Notes</label>
             <textarea class="form-control" id="notes" name="notes"></textarea>
           </div>
+          <div class="custom-divider"></div>
+        </div>
 
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-
-
-
-      <div id="responseMessage" class="mt-3"></div>
-    </div>
-  </main>
-</div>
+      </div>>
+      <div class="form-box">
+        <div id="responseMessage" class="mt-3"></div>
+        <button type="submit" class="btn btn-primary">Submit</button>
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Sidebar Script -->
-<script src="/utils/sidebar.js"></script>
+      </div>>
+    </form>
 
+
+  </div>
+</main>
 <script>
-  // Toggle visibility of "Add Category" input
-  document.getElementById('addCategorySelect').addEventListener('change', function () {
-    const addCategoryContainer = document.getElementById('addCategoryContainer');
-    addCategoryContainer.style.display = this.checked ? 'block' : 'none';
-  });
+  document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const markupDropdown = document.getElementById('markupDropdown');
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    const subCategoryDropdown = document.getElementById('subCategoryDropdown');
+    const purchasePriceInput = document.getElementById('purchasePrice');
+    const markupAmountInput = document.getElementById('markupAmount');
+    const customSellCheckbox = document.getElementById('customSellCheckbox');
+    const customSellPriceInput = document.getElementById('customSellPrice');
+    const systemsMarkupCheckbox = document.getElementById('systemsMarkupCheckbox');
+    const finalizedSellPriceDisplay = document.getElementById('finalizedSellPriceDisplay');
+    let categories = [];
+    let subcategories = [];
+    let markups = []; // Store markups
 
-  // Toggle visibility of "Add Subcategory" input
-  document.getElementById('addSubCategorySelect').addEventListener('change', function () {
-    const addSubCategoryContainer = document.getElementById('addSubCategoryContainer');
-    addSubCategoryContainer.style.display = this.checked ? 'block' : 'none';
-  });
-</script>
-
-<script>
-  // Fetch session data from the server
-  async function fetchSessionData() {
-    try {
-      const response = await fetch('/api/sessions/info');
-      if (!response.ok) throw new Error('Failed to fetch session data');
-      const data = await response.json();
-
-      // Log session data
-      console.log('Session data received:', data);
-
-      // Update the username
-      const usernameElement = document.getElementById('username');
-      if (usernameElement) {
-        usernameElement.innerText = data.username;
+    // Fetch and populate markups
+    const fetchMarkups = async () => {
+      try {
+        const response = await axios.get('/api/markups');
+        markups = response.data || [];
+        populateDropdown('markupDropdown', markups, 'title');
+      } catch (err) {
+        console.error('Error fetching markups:', err.message);
       }
+    };
 
-      // Start the session timer
-      startSessionTimer(data.loginTime);
+    // Fetch and populate categories and subcategories
+    const fetchCategoriesAndSubcategories = async () => {
+      try {
+        const response = await axios.get('/api/categories');
+        categories = response.data.categories || [];
+        subcategories = response.data.subcategories || [];
+        populateDropdown('categoryDropdown', categories, 'name');
+        populateDropdown('subCategoryDropdown', []); // Clear subcategories initially
+      } catch (err) {
+        console.error('Error fetching categories and subcategories:', err.message);
+      }
+    };
 
-      return data;
-    } catch (error) {
-      console.error('Error fetching session data:', error);
-      return null;
-    }
-  }
+    // Populate dropdown helper
+    const populateDropdown = (dropdownId, items, textProperty = 'name', filterFn = null) => {
+      const dropdown = document.getElementById(dropdownId);
+      dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
+      const filteredItems = filterFn ? items.filter(filterFn) : items;
 
-  // Start a session duration timer
-  function startSessionTimer(loginTime) {
-    const loginTimestamp = new Date(loginTime).getTime();
+      filteredItems.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item._id;
+        option.textContent = item[textProperty];
+        dropdown.appendChild(option);
+      });
+    };
 
-    if (isNaN(loginTimestamp)) {
-      console.error('Invalid loginTime:', loginTime);
-      return;
-    }
+    // Update subcategories dynamically when category changes
+    categoryDropdown.addEventListener('change', (e) => {
+      const selectedCategoryId = e.target.value;
+      const filteredSubcategories = subcategories.filter(sub => sub.parentId === selectedCategoryId);
+      populateDropdown('subCategoryDropdown', filteredSubcategories, 'name');
+    });
 
-    setInterval(() => {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - loginTimestamp) / 1000);
-      const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
-      const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
-      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+    // Update markup amount when markup is selected
+    markupDropdown.addEventListener('change', (e) => {
+      const selectedMarkupId = e.target.value;
+      const selectedMarkup = markups.find(markup => markup._id === selectedMarkupId);
 
-      const durationElement = document.getElementById('session-duration');
-      if (durationElement) {
-        durationElement.innerText = `${hours}:${minutes}:${seconds}`;
+      if (selectedMarkup && selectedMarkup.modifier) {
+        markupAmountInput.value = selectedMarkup.modifier; // Use markup percentage
       } else {
-        console.error('session-duration element not found');
+        markupAmountInput.value = 0; // Default to 0 if no valid selection
       }
-    }, 1000);
-  }
 
-  // Start a live clock
-  function startLiveClock() {
-    setInterval(() => {
-      const now = new Date();
-      const clockElement = document.getElementById('live-clock');
-      if (clockElement) {
-        clockElement.innerText = now.toLocaleTimeString();
+      calculateFinalizedSell(); // Recalculate sell price
+    });
+
+    // Calculate the finalized sell price
+    const calculateFinalizedSell = () => {
+      const purchasePrice = parseFloat(purchasePriceInput.value) || 0;
+      const markupAmount = parseFloat(markupAmountInput.value) || 0;
+      const customSellPrice = parseFloat(customSellPriceInput.value) || 0;
+
+      let finalizedSellPrice = 0;
+
+      if (systemsMarkupCheckbox.checked) {
+        // Apply markup to the purchase price
+        finalizedSellPrice = purchasePrice + (purchasePrice * (markupAmount / 100));
+      } else if (customSellCheckbox.checked) {
+        // Use the custom sell price directly
+        finalizedSellPrice = customSellPrice;
       }
-    }, 1000);
-  }
 
-  // Initialize all functions on DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', async () => {
-    await fetchSessionData();
-    startLiveClock();
+      if (finalizedSellPriceDisplay) {
+        finalizedSellPriceDisplay.textContent = finalizedSellPrice.toFixed(2);
+      }
+      return finalizedSellPrice.toFixed(2);
+    };
+
+    // Handle form submission
+    const inventoryForm = document.getElementById('inventoryForm');
+    inventoryForm.addEventListener('submit', async (event) => {
+      event.preventDefault(); // Prevent default form submission
+
+      // Gather form data
+      const formData = {
+        itemID: document.getElementById('itemID').value,
+        itemDescription: document.getElementById('itemDescription').value,
+        currentStockLevel: parseInt(document.getElementById('currentStockLevel').value) || 0,
+        onOrder: parseInt(document.getElementById('onOrder').value) || 0,
+        category: categoryDropdown.options[categoryDropdown.selectedIndex]?.text || '', // Save category name
+        subcategory: subCategoryDropdown.options[subCategoryDropdown.selectedIndex]?.text || '', // Save subcategory name
+        supplierName: document.getElementById('supplierName').value,
+        purchasePrice: parseFloat(document.getElementById('purchasePrice').value).toFixed(2),
+        markupAmount: parseFloat(document.getElementById('markupAmount').value).toFixed(2),
+        customSellPrice: parseFloat(document.getElementById('customSellPrice').value).toFixed(2),
+        finalizedSellPrice: calculateFinalizedSell(),
+        location: document.getElementById('location').value,
+        detailLoc: document.getElementById('detailLoc').value,
+        barcode: document.getElementById('barcode').value,
+        qrCode: document.getElementById('qrCode').value,
+        reorderPoint: parseInt(document.getElementById('reorderPoint').value) || 0,
+        alertThreshold: parseInt(document.getElementById('alertThreshold').value) || 0,
+        isActive: document.getElementById('isActive').checked,
+        notes: document.getElementById('notes').value,
+      };
+
+      try {
+        const response = await axios.post('/api/inventories', formData);
+        const responseMessage = document.getElementById('responseMessage');
+        responseMessage.textContent = 'Item added successfully!';
+        responseMessage.className = 'alert alert-success';
+      } catch (error) {
+        console.error('Error saving inventory item:', error.message);
+        const responseMessage = document.getElementById('responseMessage');
+        responseMessage.textContent = 'Failed to save item. Please try again.';
+        responseMessage.className = 'alert alert-danger';
+      }
+    });
+
+    // Initial Load
+    fetchCategoriesAndSubcategories();
+    fetchMarkups();
   });
 </script>
+
+
+
+
 </body>
 </html>

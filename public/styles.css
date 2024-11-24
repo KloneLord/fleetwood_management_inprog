@@ -142,3 +142,66 @@ body {
 ul.list-unstyled > li > ul:not(.collapsed) {
     display: block;
 }
+/* Utility classes for spacing */
+.spacer {
+    height: 1rem; /* Adjust height as needed */
+    width: 100%; /* Optional for full-width horizontal space */
+}
+
+.spacer-lg {
+    height: 2rem; /* Larger space */
+}
+
+.spacer-sm {
+    height: 0.5rem; /* Smaller space */
+}
+.custom-divider {
+    border: none;
+    border-top: 2px solid #ccc; /* Line style */
+    margin-bottom: 50px;            /* Space around the line */
+    width: 100%;               /* Line width */
+}
+.form-box {
+    border: 2px solid #ccc;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+}
+
+.form-box h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.form-box label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-box input {
+    width: calc(100% - 12px);
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-box button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-box button:hover {
+    background-color: #0056b3;
+}

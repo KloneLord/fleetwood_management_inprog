@@ -5,146 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Inventory Item</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-<div class="topnav">
-  <h1>Fleetwood Management - Inventory</h1>
-</div>
-
-<div class="sidebar">
-  <a href="/inventory_list.html">Inventory List</a>
-  <a href="/inventory_edit.html" class="active">Edit Inventory</a>
-</div>
-
-<div class="content-wrapper">
-  <main class="container mt-5">
-    <h1>Edit Inventory Item</h1>
-    <form id="inventoryForm">
-      <input type="hidden" id="itemId" name="itemId">
-      <div class="mb-3">
-        <label for="itemID" class="form-label">Item ID</label>
-        <input type="text" class="form-control" id="itemID" name="itemID" required readonly>
-      </div>
-      <div class="mb-3">
-        <label for="itemDescription" class="form-label">Item Description</label>
-        <input type="text" class="form-control" id="itemDescription" name="itemDescription" required>
-      </div>
-      <div class="mb-3">
-        <label for="currentStockLevel" class="form-label">Current Stock Level</label>
-        <input type="number" class="form-control" id="currentStockLevel" name="currentStockLevel" required>
-      </div>
-      <div class="mb-3">
-        <label for="onOrder" class="form-label">On Order</label>
-        <input type="number" class="form-control" id="onOrder" name="onOrder">
-      </div>
-      <div class="mb-3">
-        <label for="category" class="form-label">Category</label>
-        <select class="form-control" id="category" name="category"></select>
-      </div>
-      <div class="mb-3">
-        <label for="subcategory" class="form-label">Subcategory</label>
-        <select class="form-control" id="subcategory" name="subcategory"></select>
-      </div>
-      <div class="mb-3">
-        <label for="purchasePrice" class="form-label">Purchase Price</label>
-        <input type="number" class="form-control" id="purchasePrice" name="purchasePrice" required>
-      </div>
-      <div class="mb-3">
-        <label for="sellingPrice" class="form-label">Selling Price</label>
-        <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" required>
-      </div>
-      <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="customMarkup" name="customMarkup">
-        <label for="customMarkup" class="form-check-label">Custom Markup</label>
-      </div>
-      <button type="submit" class="btn btn-primary">Save Changes</button>
-    </form>
-  </main>
+<div class="container mt-5">
+  <h1>Edit Inventory Item</h1>
+  <form id="editInventoryForm">
+    <input type="hidden" id="itemId">
+    <div class="mb-3">
+      <label for="itemDescription" class="form-label">Description</label>
+      <input type="text" id="itemDescription" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="category" class="form-label">Category</label>
+      <select id="category" class="form-select" required></select>
+    </div>
+    <div class="mb-3">
+      <label for="subcategory" class="form-label">Subcategory</label>
+      <select id="subcategory" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+      <label for="purchasePrice" class="form-label">Purchase Price</label>
+      <input type="number" id="purchasePrice" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
 </div>
 
 <script>
-  async function loadDropdowns() {
-    try {
-      const response = await axios.get('/api/categories');
-      const categories = response.data;
+  async function loadItem() {
+    const id = sessionStorage.getItem('inventoryItemId');
+    if (!id) return;
 
-      const categorySelect = document.getElementById('category');
-      const subcategorySelect = document.getElementById('subcategory');
+    const response = await axios.get(`/api/inventory/${id}`);
+    const item = response.data;
 
-      categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.name;
-        option.textContent = category.name;
-        categorySelect.appendChild(option);
-      });
+    document.getElementById('itemId').value = item._id;
+    document.getElementById('itemDescription').value = item.itemDescription;
+    document.getElementById('purchasePrice').value = item.purchasePrice;
 
-      categorySelect.addEventListener('change', () => {
-        const selectedCategory = categorySelect.value;
-        subcategorySelect.innerHTML = '';
-        const subcategories = categories.find(cat => cat.name === selectedCategory)?.subcategories || [];
-        subcategories.forEach(sub => {
-          const option = document.createElement('option');
-          option.value = sub;
-          option.textContent = sub;
-          subcategorySelect.appendChild(option);
-        });
-      });
-    } catch (error) {
-      console.error('Error loading dropdowns:', error);
-    }
+    populateDropdowns(item.category, item.subcategory);
   }
 
-  async function loadInventoryItem() {
-    const itemId = sessionStorage.getItem('inventoryItemId');
-    if (!itemId) {
-      alert('No inventory item selected.');
-      return;
-    }
+  async function populateDropdowns(selectedCategory, selectedSubcategory) {
+    const categoriesResponse = await axios.get('/api/categories');
+    const categories = categoriesResponse.data.categories;
 
-    try {
-      const response = await axios.get(`/api/inventory/${itemId}`);
-      const item = response.data;
+    const categoryDropdown = document.getElementById('category');
+    categoryDropdown.innerHTML = categories.map(cat => `
+      <option value="${cat.name}" ${cat.name === selectedCategory ? 'selected' : ''}>${cat.name}</option>`).join('');
 
-      document.getElementById('itemId').value = item._id;
-      document.getElementById('itemID').value = item.itemID;
-      document.getElementById('itemDescription').value = item.itemDescription;
-      document.getElementById('currentStockLevel').value = item.currentStockLevel;
-      document.getElementById('onOrder').value = item.onOrder;
-      document.getElementById('category').value = item.category;
-      document.getElementById('subcategory').value = item.subcategory;
-      document.getElementById('purchasePrice').value = item.purchasePrice;
-      document.getElementById('sellingPrice').value = item.sellingPrice;
-      document.getElementById('customMarkup').checked = item.customMarkup;
-    } catch (error) {
-      console.error('Error loading inventory item:', error);
-      alert('Failed to load inventory item.');
-    }
+    const subcategoryDropdown = document.getElementById('subcategory');
+    subcategoryDropdown.innerHTML = categories.flatMap(cat => cat.subcategories)
+            .map(sub => `<option value="${sub.name}" ${sub.name === selectedSubcategory ? 'selected' : ''}>${sub.name}</option>`)
+            .join('');
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    loadDropdowns();
-    loadInventoryItem();
-  });
-
-  document.getElementById('inventoryForm').addEventListener('submit', async (event) => {
+  document.getElementById('editInventoryForm').addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-    const itemId = data.itemId;
+    const id = document.getElementById('itemId').value;
+    const data = {
+      itemDescription: document.getElementById('itemDescription').value,
+      category: document.getElementById('category').value,
+      subcategory: document.getElementById('subcategory').value,
+      purchasePrice: document.getElementById('purchasePrice').value,
+    };
 
-    try {
-      await axios.put(`/api/inventory/${itemId}`, data);
-      alert('Inventory item updated successfully!');
-      window.location.href = '/inventory_list.html';
-    } catch (error) {
-      console.error('Error updating inventory item:', error);
-      alert('Failed to update inventory item.');
-    }
+    await axios.put(`/api/inventory/${id}`, data);
+    alert('Item updated successfully!');
+    window.location.href = '/inventory_list.html';
   });
+
+  document.addEventListener('DOMContentLoaded', loadItem);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 </html>

@@ -1,59 +1,36 @@
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
-const inventorySchema = new mongoose.Schema(
+// Inventory Schema
+const inventorySchema = new Schema(
     {
-        // Identification
-        itemID: { type: String, required: true, unique: true },
-        itemDescription: { type: String, required: true },
-
-        // Stock Details
-        currentStockLevel: { type: Number, required: true, default: 0 },
-        onOrder: { type: Number, required: true, default: 0 },
-
-        // Categorization
-        category: { type: String, required: true },
-        subcategory: { type: String },
-
-        // Supplier Details
-        supplierID: { type: mongoose.Schema.Types.ObjectId, ref: 'Supplier' },
-        supplierName: { type: String },
-
-        // Pricing
-        purchasePrice: { type: Number, required: true },
-        sellingPrice: { type: Number, required: true },
-        markUpValue: { type: Number, default: 0 },
-        customMarkup: { type: Boolean, default: false }, // Added custom markup
-
-        // Location and Storage
-        location: { type: String },
-        storageDetail: { type: String },
-
-        // Tracking and History
-        stockAddedDate: { type: Date, default: Date.now },
-        lastUpdatedDate: { type: Date, default: Date.now },
-        totalSold: { type: Number, default: 0 },
-        totalReceived: { type: Number, default: 0 },
-
-        // Barcode and QR Code
-        barcodeType: { type: String },
-        qrCodeURL: { type: String },
-
-        // Audit and Notifications
-        reorderPoint: { type: Number, default: 0 },
-        minStock: { type: Number, default: 0 },
-        isActive: { type: Boolean, default: true },
-
-        // User and App Integration
-        addedByUserID: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        lastModifiedByUserID: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-
-        // Optional Fields
-        imageURL: { type: String },
-        notes: { type: String },
+            itemID: { type: String, required: true },
+            itemDescription: { type: String, required: true },
+            category: { type: String, required: true }, // Category reference
+            subcategory: { type: String }, // Subcategory reference
+            currentStockLevel: { type: Number, default: 0 },
+            onOrder: { type: Number, default: 0 },
+            supplierName: { type: String },
+            purchasePrice: { type: mongoose.Types.Decimal128, required: true },
+            markupAmount: { type: mongoose.Types.Decimal128, default: 0 },
+            customSellPrice: { type: mongoose.Types.Decimal128, default: 0 },
+            finalizedSellPrice: { type: mongoose.Types.Decimal128, default: 0 },
+            location: { type: String },
+            detailLoc: { type: String },
+            barcode: { type: String },
+            qrCode: { type: String },
+            reorderPoint: { type: Number, default: 0 },
+            alertThreshold: { type: Number, default: 0 },
+            isActive: { type: Boolean, default: true },
+            notes: { type: String },
+            totalBought: { type: Number, default: 0 },
+            totalSold: { type: Number, default: 0 },
+            lastEdited: { type: String }, // Username of the editor
+            editTime: { type: Date, default: Date.now }, // Time of edit
     },
-    { timestamps: true }
+    { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
+// Export the Inventory model
 const Inventory = mongoose.model('Inventory', inventorySchema);
-
 export default Inventory;
