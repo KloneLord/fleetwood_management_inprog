@@ -3,7 +3,7 @@ import Inventory from '../models/inventoryModel.js';
 // List all inventory items
 export const listInventories = async (req, res) => {
     try {
-        const inventories = await Inventory.find({}, 'itemID itemDescription category subcategory');
+        const inventories = await Inventory.find({}, 'itemID itemDescription currentStockLevel onOrder category subcategory isActive');
         res.json(inventories);
     } catch (err) {
         console.error(err.message);

@@ -100,7 +100,7 @@
         });
 
         if (response.ok) {
-            fetchEntries();
+            await fetchEntries();
             form.reset();
         }
     });
@@ -108,7 +108,7 @@
     // Delete an entry
     async function deleteEntry(id) {
         const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
-        if (response.ok) fetchEntries();
+        if (response.ok) await fetchEntries();
     }
 
     // Open the edit modal
@@ -134,7 +134,7 @@
         });
 
         if (response.ok) {
-            fetchEntries();
+            await fetchEntries();
             modal.style.display = 'none';
         }
     }

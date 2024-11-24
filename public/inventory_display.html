@@ -32,11 +32,21 @@
     const fetchInventoryDetails = async (id) => {
       try {
         const response = await axios.get(`/api/inventories/${id}`);
+        console.log('Fetched inventory details:', response.data); // Debugging
         return response.data; // Inventory item data
       } catch (error) {
         console.error('Error fetching inventory details:', error);
         alert('Failed to load inventory details.');
+        return null;
       }
+    };
+
+    // Helper function to format Decimal128 to a number and format with 2 decimal places and a "$" prefix
+    const formatCurrency = (value) => {
+      if (value && value.$numberDecimal !== undefined) {
+        return `$${Number(value.$numberDecimal).toFixed(2)}`;
+      }
+      return `$0.00`; // Default fallback
     };
 
     // Render inventory details
@@ -55,13 +65,13 @@
             <tr><th>Description</th><td>${inventory.itemDescription || 'N/A'}</td></tr>
             <tr><th>Category</th><td>${inventory.category || 'N/A'}</td></tr>
             <tr><th>Subcategory</th><td>${inventory.subcategory || 'N/A'}</td></tr>
-            <tr><th>Current Stock Level</th><td>${inventory.currentStockLevel || 0}</td></tr>
-            <tr><th>On Order</th><td>${inventory.onOrder || 0}</td></tr>
+            <tr><th>Current Stock Level</th><td>${inventory.currentStockLevel !== undefined ? inventory.currentStockLevel : 0}</td></tr>
+            <tr><th>On Order</th><td>${inventory.onOrder !== undefined ? inventory.onOrder : 0}</td></tr>
             <tr><th>Supplier Name</th><td>${inventory.supplierName || 'N/A'}</td></tr>
-            <tr><th>Purchase Price</th><td>$${inventory.purchasePrice?.toFixed(2) || '0.00'}</td></tr>
-            <tr><th>Markup (%)</th><td>${inventory.markupAmount || 0}</td></tr>
-            <tr><th>Custom Sell Price</th><td>$${inventory.customSellPrice?.toFixed(2) || '0.00'}</td></tr>
-            <tr><th>Finalized Sell Price</th><td>$${inventory.finalizedSellPrice?.toFixed(2) || '0.00'}</td></tr>
+            <tr><th>Purchase Price</th><td>${formatCurrency(inventory.purchasePrice)}</td></tr>
+            <tr><th>Markup (%)</th><td>${Number(inventory.markupAmount?.$numberDecimal || 0).toFixed(2)}</td></tr>
+            <tr><th>Custom Sell Price</th><td>${formatCurrency(inventory.customSellPrice)}</td></tr>
+            <tr><th>Finalized Sell Price</th><td>${formatCurrency(inventory.finalizedSellPrice)}</td></tr>
             <tr><th>Location</th><td>${inventory.location || 'N/A'}</td></tr>
             <tr><th>Detailed Location</th><td>${inventory.detailLoc || 'N/A'}</td></tr>
             <tr><th>Barcode</th><td>${inventory.barcode || 'N/A'}</td></tr>
@@ -73,7 +83,7 @@
             <tr><th>Total Bought</th><td>${inventory.totalBought || 0}</td></tr>
             <tr><th>Total Sold</th><td>${inventory.totalSold || 0}</td></tr>
             <tr><th>Last Edited By</th><td>${inventory.lastEdited || 'N/A'}</td></tr>
-            <tr><th>Last Edited Time</th><td>${new Date(inventory.editTime).toLocaleString() || 'N/A'}</td></tr>
+            <tr><th>Last Edited Time</th><td>${inventory.editTime ? new Date(inventory.editTime).toLocaleString() : 'N/A'}</td></tr>
           </tbody>
         </table>
       `;
