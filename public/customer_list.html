@@ -144,6 +144,16 @@
   <main class="container">
     <div class="container mt-5">
       <h1>Customers</h1>
+      <!-- Search Bar -->
+      <div class="mb-3">
+        <input
+                type="text"
+                id="customerSearchBar"
+                class="form-control"
+                placeholder="Search by Name or Email"
+        />
+      </div>
+      <!-- Customers Table -->
       <table class="table table-striped">
         <thead>
         <tr>
@@ -163,72 +173,86 @@
   </main>
 </div>
 <script>
-  // Fetch customers
-  // Load inventory items and display them in the table
-  async function loadInventory() {
-    const response = await axios.get('/api/inventories');
-    const inventories = response.data;
-    const tableBody = document.getElementById('inventoryTableBody');
+  let allCustomers = []; // Cache for all customer data
 
-    tableBody.innerHTML = inventories
-            .map(item => `
-      <tr>
-        <td>${item.itemID || 'N/A'}</td>
-        <td>${item.itemDescription || 'N/A'}</td>
-        <td>${item.currentStockLevel !== undefined ? item.currentStockLevel : 0}</td>
-        <td>${item.onOrder !== undefined ? item.onOrder : 0}</td>
-        <td>
-          <button class="btn btn-sm btn-secondary" onclick="viewInventory('${item._id}')">View</button>
-          <button class="btn btn-sm btn-primary" onclick="editInventory('${item._id}')">Edit</button>
-        </td>
-        <td>
-          <input type="checkbox" value="${item._id}">
-        </td>
-      </tr>
-    `).join('');
+  // Fetch and render customers
+  async function loadCustomers() {
+    try {
+      const response = await axios.get('/api/customers');
+      allCustomers = response.data; // Store all customers
+      renderCustomerList(allCustomers);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
   }
 
-  // View inventory item in a popup
-  function viewInventory(inventoryId) {
-    sessionStorage.setItem('inventoryId', inventoryId); // Save inventory ID to session storage
+  // Render customers in the table
+  function renderCustomerList(customers) {
+    const tableBody = document.getElementById('customerTableBody');
+    tableBody.innerHTML = customers
+            .map(customer => `
+        <tr>
+          <td>${customer.customerName || 'N/A'}</td>
+          <td>${customer.emailAddress || 'N/A'}</td>
+          <td>${customer.phoneNumber || 'N/A'}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="viewCustomer('${customer._id}')">View</button>
+            <button class="btn btn-sm btn-primary" onclick="editCustomer('${customer._id}')">Edit</button>
+          </td>
+          <td><input type="checkbox" value="${customer._id}"></td>
+        </tr>
+      `).join('');
+  }
 
-    // Calculate dimensions and position for the popup window
-    const width = Math.floor(window.innerWidth * 0.8); // 80% of screen width
-    const height = Math.floor(window.innerHeight * 0.7); // 70% of screen height
-    const left = Math.floor((window.innerWidth - width) / 2); // Center horizontally
-    const top = Math.floor((window.innerHeight - height) / 2); // Center vertically
-
-    // Open a popup for the inventory display page
-    window.open(
-            '/inventory_display.html', // URL of the new window
-            '_blank', // Open in a new tab/window
-            `width=${width},height=${height},top=${top},left=${left},resizable=yes`
+  // Filter customers based on search input
+  function filterCustomers() {
+    const searchText = document.getElementById('customerSearchBar').value.toLowerCase();
+    const filteredCustomers = allCustomers.filter(customer =>
+            (customer.customerName || '').toLowerCase().includes(searchText) ||
+            (customer.emailAddress || '').toLowerCase().includes(searchText)
     );
+    renderCustomerList(filteredCustomers);
   }
 
-  // Edit inventory item
-  function editInventory(inventoryId) {
-    sessionStorage.setItem('inventoryId', inventoryId); // Save inventory ID to session storage
-    window.location.href = '/inventory_edit.html'; // Navigate to the edit page
+  // View customer
+  function viewCustomer(customerId) {
+    sessionStorage.setItem('customerId', customerId); // Save customer ID to session storage
+    window.location.href = '/customer_display.html';
   }
 
-  // Load the inventory list when the DOM is ready
-  document.addEventListener('DOMContentLoaded', loadInventory);
-
+  // Edit customer
+  function editCustomer(customerId) {
+    sessionStorage.setItem('customerId', customerId); // Save customer ID to session storage
+    window.location.href = '/customer_edit.html';
+  }
 
   // Delete selected customers
   async function deleteSelected() {
     const ids = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
-    await axios.delete('/api/customers', { data: { ids } });
-    await loadCustomers();
+    if (ids.length === 0) {
+      alert('No customers selected.');
+      return;
+    }
+    try {
+      await axios.delete('/api/customers', { data: { ids } });
+      alert('Selected customers deleted successfully.');
+      loadCustomers(); // Reload the customers
+    } catch (error) {
+      console.error('Error deleting customers:', error);
+    }
   }
 
-  // Toggle select all
+  // Toggle select all checkboxes
   function toggleSelectAll() {
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(cb => cb.checked = document.getElementById('selectAll').checked);
+    const checkboxes = document.querySelectorAll('#customerTableBody input[type="checkbox"]');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    checkboxes.forEach(cb => (cb.checked = selectAllCheckbox.checked));
   }
 
+  // Attach event listeners
+  document.getElementById('customerSearchBar').addEventListener('input', filterCustomers);
+
+  // Load customers on page load
   document.addEventListener('DOMContentLoaded', loadCustomers);
 </script>
 

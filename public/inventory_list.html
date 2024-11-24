@@ -49,6 +49,15 @@
 
     <div class="container mt-5">
       <h1>Inventory List</h1>
+      <div class="mb-3">
+        <input
+                type="text"
+                id="searchBar"
+                class="form-control"
+                style="margin-top: 50px"
+                placeholder="Search by Item ID or Description"
+        />
+      </div>
       <div class="table-responsive">
         <table class="table table-striped">
           <thead>
@@ -190,6 +199,68 @@
 
     // Load the inventory list
     renderInventoryList();
+  });
+
+  let allInventoryItems = [];
+
+  // Fetch inventory items from the API
+  const fetchInventoryItems = async () => {
+    try {
+      const response = await axios.get('/api/inventories');
+      allInventoryItems = response.data; // Cache all inventory items
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching inventory items:', error);
+      return [];
+    }
+  };
+
+  // Render the inventory list in the table
+  const renderInventoryList = (items) => {
+    const inventoryTableBody = document.getElementById('inventoryTableBody');
+    inventoryTableBody.innerHTML = ''; // Clear the table body
+
+    items.forEach(item => {
+      const row = document.createElement('tr');
+
+      if (!item.isActive) {
+        row.classList.add('hidden'); // Hide inactive rows
+      }
+
+      row.innerHTML = `
+      <td>${item.itemID || 'N/A'}</td>
+      <td>${item.itemDescription || 'N/A'}</td>
+      <td>${item.currentStockLevel !== undefined ? item.currentStockLevel : 0}</td>
+      <td>${item.onOrder !== undefined ? item.onOrder : 0}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="viewInventory('${item._id}')">View</button>
+        <button class="btn btn-secondary btn-sm" onclick="editInventory('${item._id}')">Edit</button>
+      </td>
+      <td>
+        <input type="checkbox" class="inventory-select" data-id="${item._id}">
+      </td>
+    `;
+      inventoryTableBody.appendChild(row);
+    });
+  };
+
+  // Search and filter function
+  const filterTable = () => {
+    const searchText = document.getElementById('searchBar').value.toLowerCase();
+    const filteredItems = allInventoryItems.filter(item =>
+            (item.itemID || '').toLowerCase().includes(searchText) ||
+            (item.itemDescription || '').toLowerCase().includes(searchText)
+    );
+    renderInventoryList(filteredItems);
+  };
+
+  // Attach event listener to the search bar
+  document.getElementById('searchBar').addEventListener('input', filterTable);
+
+  // Initial load
+  document.addEventListener('DOMContentLoaded', async () => {
+    const inventoryItems = await fetchInventoryItems();
+    renderInventoryList(inventoryItems);
   });
 </script>
 
