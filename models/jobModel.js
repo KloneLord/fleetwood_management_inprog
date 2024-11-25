@@ -1,11 +1,14 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
-const page3Schema = new mongoose.Schema({
-    name: { type: String, required: true },
-    age: { type: Number, required: true },
-    team: { type: String, required: true },
-    username: { type: String, required: true },
-    entryDate: { type: Date, default: Date.now },
+const jobSchema = new mongoose.Schema({
+    jobTitle: { type: String, required: true },
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    jobSiteId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    jobType: { type: String, default: 'Other' },
+    jobPriority: { type: String, default: 'Normal' },
+    jobStatus: { type: String, default: 'Registered' },
+    jobDescription: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Page3', page3Schema);
+module.exports = mongoose.model('Job', jobSchema);

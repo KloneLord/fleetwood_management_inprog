@@ -350,3 +350,31 @@ body {
 .form-box button:hover {
     background-color: #0056b3;
 }
+.fleet-button {
+    background-color: #20C997; /* Base color */
+    color: #fff; /* Text color */
+    border: none;
+    border-radius: 8px; /* Rounded corners */
+    padding: 8px 12px; /* Padding for size */
+    font-size: 14px; /* Font size */
+    font-weight: bold; /* Bold text */
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: all 0.3s ease; /* Smooth hover effect */
+    max-height: 45px;
+    min-width: 10%;
+
+
+}
+
+.fleet-button:hover {
+    background-color: #18A37E; /* Slightly darker on hover */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+    transform: scale(1.05); /* Slight zoom on hover */
+}
+
+.fleet-button:active {
+    background-color: #148F70; /* Even darker when clicked */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+    transform: scale(0.98); /* Slight press effect */
+}
