@@ -54,6 +54,20 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
             margin-right: 5px;
         }
+        .form-mini-btn {
+            flex: 1;
+            background-color: #20c997; /* Blue color for tabs */
+            color: white;
+            font-size: 12px;
+            padding: 2px 0;
+            border: none;
+            border-radius: 5px; /* Rounded top corners for tab effect */
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-right: 5px;
+            min-width: 15%;
+        }
 
         .card-button:last-child {
             margin-right: 0; /* Remove margin from the last button */
@@ -73,152 +87,91 @@
 <body>
 <div class="container mt-5">
 
-
     <form id="createJobForm">
         <!-- Job Information -->
         <div class="form-section">
-            <h3>Forms and other</h3>
             <div class="tab-container">
-                <a href="job_card.html" class="card-button"><strong>Job Card</strong></a>
-                <a href="job_customer_details.html" class="card-button"><strong>Customer Details</strong></a>
-                <a href="job_time_logs.html" class="card-button"><strong>Time Logs</strong></a>
-                <a href="job_material_logs.html" class="card-button"><strong>Material Logs</strong></a>
-                <a href="job_forms_other.html" class="card-button"><strong>Forms and Other</strong></a>
+                <button type="button" onclick="window.location.href='job_card.html'" class="card-button"><strong>Job Card</strong></button>
+                <button type="button" onclick="window.location.href='job_customer_details.html'" class="card-button"><strong>Customer Details</strong></button>
+                <button type="button" onclick="window.location.href='job_time_logs.html'" class="card-button"><strong>Time Logs</strong></button>
+                <button type="button" onclick="window.location.href='job_material_logs.html'" class="card-button"><strong>Material Logs</strong></button>
+                <button type="button" onclick="window.location.href='job_forms_other.html'" class="card-button"><strong>Forms and Other</strong></button>
             </div>
 
-            <div class="mb-3">
-                <label for="jobTitle" class="form-label">Job Title</label>
-                <input type="text" class="form-control" id="jobTitle" name="jobTitle" required>
+        </div>
+        <div class="form-section">
+
+            <h3>S.W.M.S. Safe Work Methods Statement</h3>
+            <label id="form1_details" class="form-label">Detailed S.W.M.S. below to fill out and sign. Work should not start until its completed and is satisfactory. </label>
+            <div>
+                S.W.M.S. - Trench Shoring<br>
+                S.W.M.S. - Mechanical Excavation<br>
+                S.W.M.S. - Working at Heights
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="customer" class="form-label">Select Customer</label>
-                    <select class="form-control" id="customer" name="customer" required>
-                        <option value="">Select a customer</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="jobSite" class="form-label">Select Job Site</label>
-                    <select class="form-control" id="jobSite" name="jobSite">
-                        <option value="">Select a job site</option>
-                    </select>
-                </div>
+        </div>
+        <div class="form-section">
+
+            <div class="table-container">
+                <h3>File Uploads</h3>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Username</th>
+                        <th>Notes</th>
+                        <th>Link</th>
+                        <th>Select</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Data rows will be dynamically added here -->
+                    </tbody>
+                </table>
+                <form>
+                    <div class="mb-3">
+                        <label for="imageUpload" class="form-label">Image URL</label>
+                        <input type="file" class="form-control" id="imageUpload" name="imageUpload" accept="image/*">
+                        <button type="button" onclick="otherAddFile()" class="form-mini-btn">Add File</button>
+                     </div>
+                </form>
             </div>
 
+        </div>
+        <div class="form-section">
 
+            <div class="table-container">
+                <h3>Notes</h3>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Notes</th>
+                        <th>Select</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Data rows will be dynamically added here -->
+                    </tbody>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="jobType" class="form-label">Job Type</label>
-                    <select class="form-control" id="jobType" name="jobType">
-                        <option value="">Select a type</option>
-                        <option value="Repair">Repair</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Project">Project</option>
-                        <option value="Other">Other</option>
-                    </select>
+                </table>
+                <button type="submit" onclick="deleteSelected()" class="form-mini-btn">Delete Selected Note</button>
+                <form>
+                    <div class="spacer-lg"></div>
+                <div class="mb-3" style="margin-top: 20px">
+                    <label for="notes" class="form-label"><strong>Add a note to the job.</strong></label>
+                    <textarea class="form-control" id="notes" name="notes" rows="4"></textarea>
+                    <button type="submit" onclick="otherAddNote()" class="form-mini-btn">Add Note</button>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="jobPriority" class="form-label">Priority</label>
-                    <select class="form-control" id="jobPriority" name="jobPriority">
-                        <option value="Normal">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Urgent">Urgent</option>
-                    </select>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="jobStatus" class="form-label">Status</label>
-                    <select class="form-control" id="jobStatus" name="jobStatus">
-                        <option value="Registered">In the System</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Cancelled">Cancelled</option>
-                        <option value="To Invoice">To Invoice</option>
-                        <option value="Complete">Complete</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="jobDescription" class="form-label">Job Description</label>
-                <textarea class="form-control" id="jobDescription" name="jobDescription" rows="4"></textarea>
+                </form>
             </div>
         </div>
 
-        <div class="text-start">
-            <button type="submit" class="fleet-button">Submit</button>
-        </div>
+
+
+
     </form>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const customerDropdown = document.getElementById('customer');
-        const jobSiteDropdown = document.getElementById('jobSite');
 
-        // Load customers and job sites
-        const loadCustomersWithJobSites = async () => {
-            try {
-                const response = await axios.get('/api/jobs/customers-with-job-sites');
-                const customers = response.data;
-
-                // Populate the customer dropdown
-                customers.forEach(customer => {
-                    const option = document.createElement('option');
-                    option.value = customer.customerId;
-                    option.textContent = customer.customerName;
-                    customerDropdown.appendChild(option);
-                });
-
-                // Load job sites when a customer is selected
-                customerDropdown.addEventListener('change', () => {
-                    const selectedCustomerId = customerDropdown.value;
-                    const selectedCustomer = customers.find(c => c.customerId === selectedCustomerId);
-
-                    jobSiteDropdown.innerHTML = '<option value="" disabled selected>Select a job site</option>';
-                    if (selectedCustomer) {
-                        selectedCustomer.jobSites.forEach(site => {
-                            const option = document.createElement('option');
-                            option.value = site.siteId;
-                            option.textContent = site.siteDisplayName;
-                            jobSiteDropdown.appendChild(option);
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading customers and job sites:', error);
-            }
-        };
-
-        // Submit form
-        const createJobForm = document.getElementById('createJobForm');
-        createJobForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const jobData = {
-                jobTitle: document.getElementById('jobTitle').value,
-                customerId: customerDropdown.value,
-                jobSiteId: jobSiteDropdown.value,
-                jobType: document.getElementById('jobType').value,
-                jobPriority: document.getElementById('jobPriority').value,
-                jobStatus: document.getElementById('jobStatus').value,
-                jobDescription: document.getElementById('jobDescription').value
-            };
-
-            try {
-                const response = await axios.post('/api/jobs', jobData);
-                alert('Job created successfully!');
-                createJobForm.reset();
-                jobSiteDropdown.innerHTML = '<option value="" disabled selected>Select a job site</option>';
-            } catch (error) {
-                console.error('Error creating job:', error);
-                alert('Failed to create job. Please try again.');
-            }
-        });
-
-        // Initial load
-        await loadCustomersWithJobSites();
-    });
-
-</script>
 </body>
 </html>

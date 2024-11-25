@@ -79,79 +79,63 @@
     <form id="createJobForm">
         <!-- Job Information -->
         <div class="form-section">
-            <h3>Time Sheet Logs</h3>
             <div class="tab-container">
-                <a href="job_card.html" class="card-button"><strong>Job Card</strong></a>
-                <a href="job_customer_details.html" class="card-button"><strong>Customer Details</strong></a>
-                <a href="job_time_logs.html" class="card-button"><strong>Time Logs</strong></a>
-                <a href="job_material_logs.html" class="card-button"><strong>Material Logs</strong></a>
-                <a href="job_forms_other.html" class="card-button"><strong>Forms and Other</strong></a>
+                <button onclick="window.location.href='job_card.html'" class="card-button"><strong>Job Card</strong></button>
+                <button onclick="window.location.href='job_customer_details.html'" class="card-button"><strong>Customer Details</strong></button>
+                <button onclick="window.location.href='job_time_logs.html'" class="card-button"><strong>Time Logs</strong></button>
+                <button onclick="window.location.href='job_material_logs.html'" class="card-button"><strong>Material Logs</strong></button>
+                <button onclick="window.location.href='job_forms_other.html'" class="card-button"><strong>Forms and Other</strong></button>
             </div>
 
-            <div class="mb-3">
-                <label for="jobTitle" class="form-label">Job Title</label>
-                <input type="text" class="form-control" id="jobTitle" name="jobTitle" required>
-            </div>
+            <div class="container mt-5">
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="customer" class="form-label">Select Customer</label>
-                    <select class="form-control" id="customer" name="customer" required>
-                        <option value="">Select a customer</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="jobSite" class="form-label">Select Job Site</label>
-                    <select class="form-control" id="jobSite" name="jobSite">
-                        <option value="">Select a job site</option>
-                    </select>
-                </div>
-            </div>
-
-
-
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="jobType" class="form-label">Job Type</label>
-                    <select class="form-control" id="jobType" name="jobType">
-                        <option value="">Select a type</option>
-                        <option value="Repair">Repair</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Project">Project</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="jobPriority" class="form-label">Priority</label>
-                    <select class="form-control" id="jobPriority" name="jobPriority">
-                        <option value="Normal">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Urgent">Urgent</option>
-                    </select>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="jobStatus" class="form-label">Status</label>
-                    <select class="form-control" id="jobStatus" name="jobStatus">
-                        <option value="Registered">In the System</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Cancelled">Cancelled</option>
-                        <option value="To Invoice">To Invoice</option>
-                        <option value="Complete">Complete</option>
-                    </select>
+                <div class="table-container">
+                    <h3>Time Logs</h3>
+                    <div>
+                        <button onclick="window.location.href='job_add_time_log.html'" class="card-button" style="min-width: 19%"><strong>Add a time log</strong></button>
+                        <button onclick="window.location.href='job_view_totals.html'" class="card-button" style="min-width: 19%"><strong>View totals</strong></button>
+                        <button onclick="deleteSelected()" class="card-button" style="min-width: 19%"><strong>Delete Selected</strong></button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Clock In</th>
+                            <th>Clock Out</th>
+                            <th>Action</th>
+                            <th>Select</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Data rows will be dynamically added here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label for="jobDescription" class="form-label">Job Description</label>
-                <textarea class="form-control" id="jobDescription" name="jobDescription" rows="4"></textarea>
-            </div>
-        </div>
 
-        <div class="text-start">
-            <button type="submit" class="fleet-button">Submit</button>
-        </div>
-    </form>
-</div>
+
+<script>
+    document.getElementById('timeLogForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const timeLogData = {
+            userName: document.getElementById('userName').value,
+            clockInTime: document.getElementById('clockInTime').value,
+            clockOutTime: document.getElementById('clockOutTime').value,
+            notes: document.getElementById('notes').value
+        };
+
+        console.log('Time Log Data:', timeLogData);
+
+        // Example: Post the time log data to your server
+        // axios.post('/api/time-logs', timeLogData)
+        //     .then(response => alert('Time log saved successfully!'))
+        //     .catch(error => console.error('Error saving time log:', error));
+    });
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         const customerDropdown = document.getElementById('customer');

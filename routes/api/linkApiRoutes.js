@@ -157,7 +157,7 @@ const linksByRole = {
             active: false,
             subItems: [
                 { name: 'List', url: '/jobs_list.html' },
-                { name: 'Add/Edit', url: '/jobs_edit.html' },
+                { name: 'Create a Job', url: '/job_create.html' },
             ],
         },
         {
