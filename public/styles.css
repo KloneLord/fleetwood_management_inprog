@@ -378,3 +378,23 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow */
     transform: scale(0.98); /* Slight press effect */
 }
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0; /* Spacing around the divider */
+}
+
+.divider-line {
+    flex-grow: 1;
+    height: 2px; /* Thickness of the line */
+    background-color: #20c997; /* Teal color for the divider line */
+    max-width: 65%;
+}
+
+.divider-text {
+    padding: 0 15px;
+    font-size: 18px; /* Size of the text */
+    color: #333; /* Dark text color */
+    font-weight: bold;
+}
