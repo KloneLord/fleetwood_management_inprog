@@ -110,8 +110,120 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    const jobTableBody = document.getElementById('jobTableBody');
+
+    // Fetch all active jobs from the database
+    const fetchJobs = async () => {
+      try {
+        console.log('Fetching active jobs from the database...');
+        const response = await axios.get('/api/jobs?active=true'); // Ensure the backend supports this query
+        console.log('Jobs fetched:', response.data);
+        return response.data; // Ensure the endpoint returns an array of jobs
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+        alert('Failed to load jobs. Please try again.');
+        return [];
+      }
+    };
+    const setJobSession = async (jobId) => {
+      try {
+        const response = await axios.post('/api/session/set-job', { jobId });
+        console.log(response.data.message);
+      } catch (error) {
+        console.error('Error setting job session:', error);
+        alert('Failed to store job in session.');
+      }
+    };
+    // Populate the jobs table
+    const populateJobTable = (jobs) => {
+      jobTableBody.innerHTML = ''; // Clear any existing rows
+
+      if (!jobs.length) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `<td colspan="7" class="text-center">No active jobs found</td>`;
+        jobTableBody.appendChild(emptyRow);
+        return;
+      }
+
+      jobs.forEach((job) => {
+        const row = document.createElement('tr');
+
+        // Format the created date
+        const createdDate = new Date(job.createdAt).toLocaleDateString();
+
+        row.innerHTML = `
+          <td>${createdDate}</td>
+          <td>${job.customerName || 'N/A'}</td>
+          <td>${job.jobTitle || 'N/A'}</td>
+          <td>${job.jobStatus || 'N/A'}</td>
+          <td>${job.jobPriority || 'N/A'}</td>
+          <td class="actions-column">
+            <button class="btn btn-sm btn-primary" onclick="viewJob('${job._id}')">View</button>
+            <button class="btn btn-sm btn-warning" onclick="fileJob('${job._id}')">File</button>
+          </td>
+          <td>
+            <input type="checkbox" value="${job._id}">
+          </td>
+        `;
+
+        jobTableBody.appendChild(row);
+      });
+    };
+
+    // Fetch and populate jobs on page load
+    const jobs = await fetchJobs();
+    populateJobTable(jobs);
+// Actions
+    window.viewJob = (id) => {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Calculate dimensions for the new window
+      const windowWidth = Math.round(screenWidth * 0.7);
+      const windowHeight = Math.round(screenHeight * 0.9);
+
+      // Calculate position to center the new window
+      const windowLeft = Math.round((screenWidth - windowWidth) / 2);
+      const windowTop = Math.round((screenHeight - windowHeight) / 2);
+
+      // Open the new window
+      const jobCardWindow = window.open(
+              `/job_card.html?id=${id}`, // Pass the job ID as a query parameter
+              'JobCard',
+              `width=${windowWidth},height=${windowHeight},left=${windowLeft},top=${windowTop},resizable,scrollbars`
+      );
+
+      if (!jobCardWindow) {
+        alert('Failed to open job card window. Please disable your popup blocker and try again.');
+      }
+    };
+
+    window.fileJob = async (id) => {
+      const confirmFile = confirm('Are you sure you want to file this job?');
+      if (!confirmFile) return;
+
+      try {
+        console.log(`Filing job with ID: ${id}`);
+        await axios.patch(`/api/jobs/${id}`, { active: false }); // Update the `active` field to false
+        alert('Job filed successfully.');
+        // Refresh job list after filing
+        const updatedJobs = await fetchJobs();
+        populateJobTable(updatedJobs);
+      } catch (error) {
+        console.error('Error filing job:', error);
+        alert('Failed to file job. Please try again.');
+      }
+    };
+=======
     await fetchSessionData();
     startLiveClock();
+>>>>>>> parent of f0ef46e (update to job card)
+=======
+    await fetchSessionData();
+    startLiveClock();
+>>>>>>> parent of f0ef46e (update to job card)
   });
 </script>
 </body>

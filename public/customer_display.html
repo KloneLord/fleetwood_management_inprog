@@ -113,71 +113,7 @@
     </div>
 </div>
 
-<script>
-    function closePage() {
-        // Attempt to close the current window
-        window.close();
 
-        // Notify the user if the browser blocks the action
-        if (!window.closed) {
-            alert('Unable to close the page. You may need to close it manually.');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        const customerId = sessionStorage.getItem('customerId'); // Fetch customer ID from sessionStorage
-        if (!customerId) {
-            alert('No customer selected.');
-            return;
-        }
-
-        try {
-            // Fetch customer details
-            const response = await axios.get(`/api/customers/${customerId}`);
-            const customer = response.data;
-
-            // Populate card with customer details
-            document.getElementById('customerName').textContent = customer.customerName || 'N/A';
-            document.getElementById('contactName').textContent = customer.contactName || 'N/A';
-            document.getElementById('phoneNumber').textContent = customer.phoneNumber || 'N/A';
-            document.getElementById('mobileNumber').textContent = customer.mobileNumber || 'N/A';
-            document.getElementById('emailAddress').textContent = customer.emailAddress || 'N/A';
-            document.getElementById('street').textContent = customer.street || 'N/A';
-            document.getElementById('city').textContent = customer.city || 'N/A';
-            document.getElementById('postalCode').textContent = customer.postalCode || 'N/A';
-            document.getElementById('region').textContent = customer.region || 'N/A';
-
-            // Populate job sites
-            const jobSitesContainer = document.getElementById('jobSitesContainer');
-            customer.jobSites.forEach(site => {
-                const jobSiteDiv = document.createElement('div');
-                jobSiteDiv.className = 'job-site';
-                jobSiteDiv.innerHTML = `
-                    <p><span>Site Name:</span> ${site.siteName || 'N/A'}</p>
-                    <p><span>Site Address:</span> ${site.siteAddress || 'N/A'}</p>
-                `;
-                jobSitesContainer.appendChild(jobSiteDiv);
-            });
-        } catch (error) {
-            console.error('Error loading customer data:', error);
-            alert('Failed to load customer details.');
-        }
-    });
-
-    function closeDetails() {
-        window.history.back(); // Navigate back to the previous page
-    }
-
-    function editCustomer() {
-        const customerId = sessionStorage.getItem('customerId');
-        if (customerId) {
-            sessionStorage.setItem('customerId', customerId); // Ensure customer ID is stored
-            window.location.href = '/customer_displayedit.html';
-        } else {
-            alert('No customer selected for editing.');
-        }
-    }
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
