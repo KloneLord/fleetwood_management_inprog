@@ -3,57 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job List</title>
+  <title>Dashboard</title>
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <style>
-    body {
-      background-color: #f4f6f9;
-    }
-
-    .table-container {
-      margin: 20px auto;
-      max-width: 90%;
-    }
-
-    .table-header {
-      color: #20c997;
-    }
-
-    .actions-column {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-sm {
-      padding: 5px 10px;
-    }
-  </style>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
 </head>
 <body>
-<div class="container mt-5">
-  <h1>Job List</h1>
-  <div class="table-container">
-    <table class="table table-striped table-bordered">
-      <thead class="table-header">
-      <tr>
-        <th>Created</th>
-        <th>Customer Name</th>
-        <th>Job Title</th>
-        <th>Status</th>
-        <th>Priority</th>
-        <th>Actions</th>
-        <th>Select</th>
-      </tr>
-      </thead>
-      <tbody id="jobTableBody">
-      <!-- Jobs will be dynamically populated here -->
-      </tbody>
-    </table>
+<!-- Top Navigation -->
+<div class="topnav" id="topnav">
+  <div class="container-fluid">
+    <!-- User Info -->
+    <div id="user-info">
+      Welcome <span id="username">User</span>, logged in for
+      <span id="session-duration">00:00:00</span>
+    </div>
+
+    <!-- Live Clock + Icons -->
+    <div class="icon-section">
+      <div>
+        Current Time: <span id="live-clock">Loading...</span>
+      </div>
+      <!-- Notifications Icon -->
+      <div class="icon-wrapper">
+        <i class="fas fa-bell"></i>
+        <span class="badge bg-danger">3</span>
+      </div>
+      <!-- Messages Icon -->
+      <div class="icon-wrapper">
+        <i class="fas fa-envelope"></i>
+        <span class="badge bg-primary">5</span>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar"></div>
+
+<!-- Main Content -->
+<div class="content-wrapper">
+  <main class="container">
+    <h1>Welcome to the Dashboard</h1>
+    <p>This is where the main dashboard content will go.</p>
+  </main>
+</div>
+
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sidebar Script -->
+<script src="/utils/sidebar.js"></script>
 <script>
+  // Fetch session data from the server
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+
+      console.log('Session data received:', data);
+
+      const usernameElement = document.getElementById('username');
+      if (usernameElement) {
+        usernameElement.innerText = data.username;
+      }
+
+      startSessionTimer(data.loginTime);
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
+
+  function startSessionTimer(loginTime) {
+    const loginTimestamp = new Date(loginTime).getTime();
+    if (isNaN(loginTimestamp)) {
+      console.error('Invalid loginTime:', loginTime);
+      return;
+    }
+
+    setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - loginTimestamp) / 1000);
+      const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+
+      const durationElement = document.getElementById('session-duration');
+      if (durationElement) {
+        durationElement.innerText = ${hours}::;
+      }
+    }, 1000);
+  }
+
+  function startLiveClock() {
+    setInterval(() => {
+      const now = new Date();
+      const clockElement = document.getElementById('live-clock');
+      if (clockElement) {
+        clockElement.innerText = now.toLocaleTimeString();
+      }
+    }, 1000);
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
+<<<<<<< HEAD
     const jobTableBody = document.getElementById('jobTableBody');
 
     // Fetch all active jobs from the database
@@ -158,6 +215,10 @@
         alert('Failed to file job. Please try again.');
       }
     };
+=======
+    await fetchSessionData();
+    startLiveClock();
+>>>>>>> parent of f0ef46e (update to job card)
   });
 </script>
 </body>

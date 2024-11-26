@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Job</title>
+    <title>Create Job</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link href="styles.css" rel="stylesheet">
@@ -25,11 +25,17 @@
             margin-bottom: 15px;
         }
 
+        .material-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
         .tab-container {
             display: flex;
             justify-content: space-between;
             width: 100%;
-            background-color: #f0f0f0;
+            background-color: #f0f0f0; /* Light background for filing cabinet effect */
             border-radius: 8px;
             padding: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -37,12 +43,12 @@
 
         .card-button {
             flex: 1;
-            background-color: #20c997;
+            background-color: #20c997; /* Blue color for tabs */
             color: white;
             font-size: 16px;
             padding: 10px 0;
             border: none;
-            border-radius: 5px 5px 0 0;
+            border-radius: 5px 5px 0 0; /* Rounded top corners for tab effect */
             text-align: center;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
@@ -50,17 +56,17 @@
         }
 
         .card-button:last-child {
-            margin-right: 0;
+            margin-right: 0; /* Remove margin from the last button */
         }
 
         .card-button:hover {
-            background-color: #10644B;
-            transform: translateY(-2px);
+            background-color: #10644B ; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight lift on hover */
         }
 
         .card-button:active {
-            background-color: #333333;
-            transform: translateY(0);
+            background-color: #333333; /* Even darker blue when active */
+            transform: translateY(0); /* Reset transform */
         }
     </style>
     <script>
@@ -70,10 +76,15 @@
 <body>
 <div class="container mt-5">
 
-    <form id="editJobForm">
+    <form id="createJobForm">
+        <!-- Job Information -->
         <div class="form-section">
-            <div class="tab-container" id="tabLinks">
-                <!-- Tabs with links populated dynamically -->
+            <div class="tab-container">
+                <button onclick="window.location.href='job_card.html'" class="card-button"><strong>Job Card</strong></button>
+                <button onclick="window.location.href='job_customer_details.html'" class="card-button"><strong>Customer Details</strong></button>
+                <button onclick="window.location.href='job_time_logs.html'" class="card-button"><strong>Time Logs</strong></button>
+                <button onclick="window.location.href='job_material_logs.html'" class="card-button"><strong>Material Logs</strong></button>
+                <button onclick="window.location.href='job_forms_other.html'" class="card-button"><strong>Forms and Other</strong></button>
             </div>
 
             <div class="mb-3">
@@ -83,18 +94,20 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="customer" class="form-label">Customer</label>
+                    <label for="customer" class="form-label">Job Card</label>
                     <select class="form-control" id="customer" name="customer" required>
                         <option value="">Select a customer</option>
                     </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="jobSite" class="form-label">Job Site</label>
+                    <label for="jobSite" class="form-label">Select Job Site</label>
                     <select class="form-control" id="jobSite" name="jobSite">
                         <option value="">Select a job site</option>
                     </select>
                 </div>
             </div>
+
+
 
             <div class="row">
                 <div class="col-md-4 mb-3">
@@ -132,6 +145,11 @@
                 <textarea class="form-control" id="jobDescription" name="jobDescription" rows="4"></textarea>
             </div>
         </div>
+
+        <div class="text-start">
+            <button type="submit" class="fleet-button">Submit</button>
+            <button type="submit" class="fleet-button">Edit</button>
+        </div>
     </form>
 </div>
 <script>
@@ -160,9 +178,10 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-        const queryParams = new URLSearchParams(window.location.search);
-        const jobId = queryParams.get('id'); // Extract job ID from URL
+        const customerDropdown = document.getElementById('customer');
+        const jobSiteDropdown = document.getElementById('jobSite');
 
+<<<<<<< HEAD
         const tabLinksContainer = document.getElementById('tabLinks');
 
         const tabs = [
@@ -254,6 +273,72 @@
     // Fetch and populate job details when the page loads
     document.addEventListener('DOMContentLoaded', fetchJobDetails);
 
+=======
+        // Load customers and job sites
+        const loadCustomersWithJobSites = async () => {
+            try {
+                const response = await axios.get('/api/jobs/customers-with-job-sites');
+                const customers = response.data;
+
+                // Populate the customer dropdown
+                customers.forEach(customer => {
+                    const option = document.createElement('option');
+                    option.value = customer.customerId;
+                    option.textContent = customer.customerName;
+                    customerDropdown.appendChild(option);
+                });
+
+                // Load job sites when a customer is selected
+                customerDropdown.addEventListener('change', () => {
+                    const selectedCustomerId = customerDropdown.value;
+                    const selectedCustomer = customers.find(c => c.customerId === selectedCustomerId);
+
+                    jobSiteDropdown.innerHTML = '<option value="" disabled selected>Select a job site</option>';
+                    if (selectedCustomer) {
+                        selectedCustomer.jobSites.forEach(site => {
+                            const option = document.createElement('option');
+                            option.value = site.siteId;
+                            option.textContent = site.siteDisplayName;
+                            jobSiteDropdown.appendChild(option);
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading customers and job sites:', error);
+            }
+        };
+
+        // Submit form
+        const createJobForm = document.getElementById('createJobForm');
+        createJobForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const jobData = {
+                jobTitle: document.getElementById('jobTitle').value,
+                customerId: customerDropdown.value,
+                jobSiteId: jobSiteDropdown.value,
+                jobType: document.getElementById('jobType').value,
+                jobPriority: document.getElementById('jobPriority').value,
+                jobStatus: document.getElementById('jobStatus').value,
+                jobDescription: document.getElementById('jobDescription').value
+            };
+
+            try {
+                const response = await axios.post('/api/jobs', jobData);
+                alert('Job created successfully!');
+                createJobForm.reset();
+                jobSiteDropdown.innerHTML = '<option value="" disabled selected>Select a job site</option>';
+            } catch (error) {
+                console.error('Error creating job:', error);
+                alert('Failed to create job. Please try again.');
+            }
+        });
+
+        // Initial load
+        await loadCustomersWithJobSites();
+    });
+
+>>>>>>> parent of f0ef46e (update to job card)
 </script>
 
 </body>

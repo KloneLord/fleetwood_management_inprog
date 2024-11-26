@@ -1,6 +1,8 @@
 ﻿import express from 'express';
 import dotenv from 'dotenv';
 import session from 'express-session';
+
+
 import path from 'path';
 import connectDB from './config/dbConfig.js';
 import authMiddleware from './middleware/authMiddleware.js';
@@ -14,7 +16,6 @@ import linkApiRoutes from './routes/api/linkApiRoutes.js';
 import categoryApiRoutes from './routes/api/categoryApiRoutes.js';
 import markUpApiRoutes from './routes/api/markUpApiRoutes.js';
 import inventoryApiRoutes from './routes/api/inventoryApiRoutes.js';
-import jobApiRoutes from './routes/api/jobApiRoutes.js';
 
 dotenv.config();
 
@@ -56,7 +57,6 @@ app.use('/api/customers', customerApiRoutes);
 app.use('/api/categories', categoryApiRoutes);
 app.use('/api/markups', markUpApiRoutes);
 app.use('/api/inventories', inventoryApiRoutes); // Add inventory routes
-app.use('/api/jobs', jobApiRoutes); // Use job routes
 
 app.get('/dashboard', authMiddleware, (req, res) => {
     console.log('Serving dashboard to authenticated user:', req.session.user);

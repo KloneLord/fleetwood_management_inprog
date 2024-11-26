@@ -1,44 +1,53 @@
-import Job from '../models/jobModel.js';
+const Customer = require('../models/customerModel');
+const Job = require('../models/jobModel');
 
-export const createJob = async (req, res) => {
+// Get customers and their job sites
+const getCustomersWithJobSites = async (req, res) => {
     try {
-        const {
-            jobTitle,
-            customerId,
-            customerName,
-            jobSiteId,
-            jobSiteName,
-            jobSiteAddress,
-            jobType,
-            jobPriority,
-            jobStatus,
-            jobDescription,
-        } = req.body;
-
-        // Create a new job document
-        const newJob = new Job({
-            jobTitle,
-            customerId,
-            customerName, // Save customer name
-            jobSiteId,
-            jobSiteName, // Save job site name
-            jobSiteAddress, // Save job site address
-            jobType,
-            jobPriority,
-            jobStatus,
-            jobDescription,
-        });
-
-        // Save the job to the database
-        const savedJob = await newJob.save();
-
-        res.status(201).json({ message: 'Job created successfully', job: savedJob });
+        const customers = await Customer.find({}, 'customerName jobSites'); // Fetch customers with job sites only
+        const customersWithSites = customers.map(customer => ({
+            customerId: customer._id,
+            customerName: customer.customerName,
+            jobSites: customer.jobSites.map(site => ({
+                siteId: site._id,
+                siteDisplayName: `${site.jobsiteName} - ${site.jobsiteAddress}`
+            }))
+        }));
+        res.json(customersWithSites);
     } catch (error) {
-        console.error('Error creating job:', error);
-        res.status(500).json({ error: 'Failed to create job' });
+        console.error('Error fetching customers and job sites:', error);
+        res.status(500).json({ message: 'Error fetching customers and job sites' });
     }
 };
 
+// Create a new job
+const createJob = async (req, res) => {
+    const { jobTitle, customerId, jobSiteId, jobType, jobPriority, jobStatus, jobDescription } = req.body;
+
+    if (!jobTitle || !customerId || !jobSiteId || !jobDescription) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    try {
+        const newJob = new Job({
+            jobTitle,
+            customerId,
+            jobSiteId,
+            jobType: jobType || 'Other',
+            jobPriority: jobPriority || 'Normal',
+            jobStatus: jobStatus || 'Registered',
+            jobDescription
+        });
+
+        await newJob.save();
+        res.status(201).json({ message: 'Job created successfully', job: newJob });
+    } catch (error) {
+        console.error('Error creating job:', error);
+        res.status(500).json({ message: 'Error creating job' });
+    }
+};
+
+<<<<<<< HEAD
 
 export const getAllJobs = async (req, res) => {
     try {
@@ -128,3 +137,6 @@ export const getJobFromSession = (req, res) => {
 
 
 
+=======
+module.exports = { getCustomersWithJobSites, createJob };
+>>>>>>> parent of f0ef46e (update to job card)
