@@ -108,4 +108,23 @@ export const getJobById = async (req, res) => {
     }
 };
 
+// Store job ID in session
+export const setJobInSession = (req, res) => {
+    const { jobId } = req.body;
+    if (!jobId) {
+        return res.status(400).json({ message: 'Job ID is required' });
+    }
+    req.session.jobId = jobId;
+    res.status(200).json({ message: 'Job ID stored in session successfully' });
+};
+
+// Retrieve job ID from session
+export const getJobFromSession = (req, res) => {
+    if (!req.session.jobId) {
+        return res.status(404).json({ message: 'No job ID found in session' });
+    }
+    res.status(200).json({ jobId: req.session.jobId });
+};
+
+
 

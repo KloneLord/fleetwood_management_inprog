@@ -69,7 +69,15 @@
         return [];
       }
     };
-
+    const setJobSession = async (jobId) => {
+      try {
+        const response = await axios.post('/api/session/set-job', { jobId });
+        console.log(response.data.message);
+      } catch (error) {
+        console.error('Error setting job session:', error);
+        alert('Failed to store job in session.');
+      }
+    };
     // Populate the jobs table
     const populateJobTable = (jobs) => {
       jobTableBody.innerHTML = ''; // Clear any existing rows

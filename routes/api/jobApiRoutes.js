@@ -1,21 +1,32 @@
 import express from 'express';
-import { createJob } from '../../controllers/jobController.js';
-import { getAllJobs } from '../../controllers/jobController.js';
-import { getJobs, updateJob } from '../../controllers/jobController.js';
-import { getJobById } from '../../controllers/jobController.js';
+import {
+    createJob,
+    getAllJobs,
+    getJobs,
+    updateJob,
+    getJobById,
+    setJobInSession,
+    getJobFromSession,
+} from '../../controllers/jobController.js';
 
 const router = express.Router();
 
-// Route to handle job creation
+// Create a new job
 router.post('/', createJob);
-router.get('/', getAllJobs);
+
+// Get all jobs
 router.get('/', getJobs);
-router.patch('/:id', updateJob);
+
+// Get a single job by ID
 router.get('/:id', getJobById);
 
+// Update a job
+router.patch('/:id', updateJob);
+
+// Set job ID in session
+router.post('/session/set-job', setJobInSession);
+
+// Get job ID from session
+router.get('/session/get-job', getJobFromSession);
+
 export default router;
-
-
-
-
-

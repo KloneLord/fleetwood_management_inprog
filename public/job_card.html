@@ -63,6 +63,9 @@
             transform: translateY(0);
         }
     </style>
+    <script>
+        console.log("job card loaded")
+    </script>
 </head>
 <body>
 <div class="container mt-5">
@@ -132,13 +135,36 @@
     </form>
 </div>
 <script>
+    const fetchJobFromSession = async () => {
+        try {
+            const response = await axios.get('/api/session/get-job');
+            return response.data.jobId;
+        } catch (error) {
+            console.error('Error fetching job from session:', error);
+            alert('Failed to retrieve job from session.');
+            return null;
+        }
+    };
+
+    // Example: Use this function in your `DOMContentLoaded` event
+    document.addEventListener('DOMContentLoaded', async () => {
+        const jobId = await fetchJobFromSession();
+        if (!jobId) {
+            alert('No Job ID found in session. Redirecting to job list...');
+            window.location.href = 'jobs_list.html';
+            return;
+        }
+
+        console.log(`Job ID from session: ${jobId}`);
+        await fetchJobDetails(jobId); // Populate job details as before
+    });
+
     document.addEventListener('DOMContentLoaded', async () => {
         const queryParams = new URLSearchParams(window.location.search);
         const jobId = queryParams.get('id'); // Extract job ID from URL
 
         const tabLinksContainer = document.getElementById('tabLinks');
 
-        // Populate the tabs with the job ID
         const tabs = [
             { name: 'Job Card', url: 'job_card.html' },
             { name: 'Customer Details', url: 'job_customer_details.html' },
@@ -152,36 +178,83 @@
             button.className = 'card-button';
             button.innerHTML = `<strong>${tab.name}</strong>`;
             button.onclick = () => {
-                window.location.href = `${tab.url}?id=${jobId}`;
+                window.location.href = tab.url;
             };
-            tabLinksContainer.appendChild(button);
+            document.getElementById('tabLinks').appendChild(button);
         });
 
-        // Fetch job details from the database and populate the form
+
+        // Function to fetch job details from the database
         const fetchJobDetails = async (id) => {
             try {
+                console.log(`Fetching details for job ID: ${id}`);
                 const response = await axios.get(`/api/jobs/${id}`);
                 const job = response.data;
 
-                document.getElementById('jobTitle').value = job.jobTitle;
+                // Populate form fields with job details
+                document.getElementById('jobTitle').value = job.jobTitle || '';
                 document.getElementById('customer').value = job.customerId || '';
-                document.getElementById('customerName').value = job.customerName || '';
-                document.getElementById('jobSiteName').value = job.jobSiteName || '';
-                document.getElementById('jobSiteAddress').value = job.jobSiteAddress || '';
+                document.getElementById('jobSite').value = job.jobSiteId || '';
                 document.getElementById('jobType').value = job.jobType || '';
                 document.getElementById('jobPriority').value = job.jobPriority || '';
                 document.getElementById('jobStatus').value = job.jobStatus || '';
                 document.getElementById('jobDescription').value = job.jobDescription || '';
             } catch (error) {
                 console.error('Error fetching job details:', error);
-                alert('Failed to load job details.');
+
+                // Enhanced error handling with detailed error messages
+                if (error.response && error.response.status === 404) {
+                    alert('Job not found. Please check the Job ID.');
+                } else {
+                    alert('Failed to load job details. Please try again later.');
+                }
             }
         };
 
         if (jobId) {
+            console.log(`Job ID detected: ${jobId}`);
             await fetchJobDetails(jobId); // Fetch and populate job details
+        } else {
+            console.warn('No Job ID found in the URL.');
+            alert('Job ID is missing. Please provide a valid Job ID.');
         }
+        window.viewJob = async (jobId) => {
+            try {
+                await axios.post('/api/jobs/set-session', { jobId });
+                window.location.href = 'job_card.html'; // Navigate to the job card page
+            } catch (error) {
+                console.error('Error setting job ID in session:', error);
+                alert('Failed to set job ID in session.');
+            }
+        };
+
+
     });
+
+    const fetchJobDetails = async () => {
+        try {
+            const jobId = await fetchJobFromSession(); // Retrieve job ID from session
+            const response = await axios.get(`/api/jobs/${jobId}`);
+            const job = response.data;
+
+            console.log('Job details fetched:', job);
+            document.getElementById('jobTitle').value = job.jobTitle || '';
+            document.getElementById('customer').value = job.customerId || '';
+            document.getElementById('jobSite').value = job.jobSiteId || '';
+            document.getElementById('jobType').value = job.jobType || '';
+            document.getElementById('jobPriority').value = job.jobPriority || '';
+            document.getElementById('jobStatus').value = job.jobStatus || '';
+            document.getElementById('jobDescription').value = job.jobDescription || '';
+        } catch (error) {
+            console.error('Error fetching job details:', error);
+            alert('Failed to load job details.');
+        }
+    };
+
+    // Fetch and populate job details when the page loads
+    document.addEventListener('DOMContentLoaded', fetchJobDetails);
+
 </script>
+
 </body>
 </html>
