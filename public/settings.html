@@ -44,9 +44,77 @@
 <!-- Main Content -->
 <div class="content-wrapper">
     <main class="container">
+        <div class="container mt-5">
+            <h1>Manage Markups</h1>
 
+            <!-- Add or Update Markup Form -->
+            <form id="markupForm">
+                <div class="mb-3">
+                    <label for="markupTitle" class="form-label">Markup Title</label>
+                    <input type="text" id="markupTitle" class="form-control" name="markupTitle" required>
+                </div>
+                <div class="mb-3">
+                    <label for="markupModifier" class="form-label">Modifier (%)</label>
+                    <input type="number" id="markupModifier" class="form-control" name="markupModifier" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Markup</button>
+            </form>
+        </div>
 
+        <script>
+            // Fetch session data from the server
+            async function fetchSessionData() {
+                try {
+                    const response = await fetch('/api/sessions/info');
+                    if (!response.ok) {
+                        console.error('Failed to fetch session data');
+                        return null;
+                    }
 
+                    const data = await response.json();
+
+                    console.log('Session data received:', data);
+
+                    // Example: dynamically use license number (lic_no)
+                    const licenseNumberElement = document.getElementById('licNo');
+                    if (licenseNumberElement) {
+                        licenseNumberElement.innerText = data.lic_no || 'N/A';
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('Error fetching session data:', error);
+                    return null;
+                }
+            }
+
+            // Handle markup form submission
+            document.getElementById('markupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const sessionData = await fetchSessionData();
+                if (!sessionData || !sessionData.lic_no) {
+                    alert('License number missing. Please log in.');
+                    return;
+                }
+
+                const title = document.getElementById('markupTitle').value;
+                const modifier = parseFloat(document.getElementById('markupModifier').value);
+                const licenseNumber = sessionData.lic_no;
+
+                try {
+                    await axios.post('/api/markups', { title, modifier, licenseNumber });
+                    alert('Markup saved successfully!');
+                    document.getElementById('markupForm').reset();
+                } catch (err) {
+                    console.error('Error saving markup:', err.message);
+                    alert('Failed to save markup.');
+                }
+            });
+
+            // Initialize session fetch on page load
+            document.addEventListener('DOMContentLoaded', fetchSessionData);
+        </script>
     </main>
 </div>
 

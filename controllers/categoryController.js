@@ -1,113 +1,113 @@
 import Category from '../models/categoryModel.js';
-import express from 'express';
-// Fetch all categories and subcategories
+import { generateUniqueId } from './id_genController.js';
+
+// List all categories
 export const listCategories = async (req, res) => {
     try {
-        const categories = await Category.find().lean();
-        const subcategories = categories.flatMap(cat =>
-            cat.subcategories.map(sub => ({
-                _id: sub._id,
-                name: sub.name,
-                parentId: cat._id.toString(), // Associate subcategories with their parent category
-            }))
-        );
+        const { licenseNumber } = req.query; // Get licenseNumber from query
 
-        res.json({ categories, subcategories });
+        if (!licenseNumber) {
+            return res.status(400).json({ message: 'License number is required.' });
+        }
+
+        const categories = await Category.find({ licenseNumber }).lean();
+        res.status(200).json(categories);
     } catch (err) {
         console.error('Error fetching categories:', err.message);
-        res.status(500).json({ message: 'Error fetching categories' });
+        res.status(500).json({ message: 'Failed to fetch categories' });
     }
 };
 
-
-
-// Add category
 export const addCategory = async (req, res) => {
     try {
         const { name } = req.body;
+        const { lic_no: licenseNumber } = req.session;
 
-        // Check if the category already exists
-        const existingCategory = await Category.findOne({ name });
-        if (existingCategory) {
-            return res.status(400).json({ message: 'Category already exists' });
+        if (!licenseNumber) {
+            return res.status(400).json({ message: 'License number is required.' });
         }
 
-        // Create and save new category
-        const category = new Category({ name });
+        const fleetwood_id = await generateUniqueId('cat-');
+
+        const category = new Category({ name, fleetwood_id, licenseNumber });
         await category.save();
 
         res.status(201).json({ message: 'Category added successfully', category });
     } catch (err) {
         console.error('Error adding category:', err.message);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Failed to add category' });
     }
 };
 
 
-// Delete category
+
+// Delete a category
 export const deleteCategory = async (req, res) => {
     try {
-        const categoryId = req.params.id;
-        const category = await Category.findByIdAndDelete(categoryId);
-        if (!category) return res.status(404).json({ message: 'Category not found' });
+        const { id: fleetwood_id } = req.params; // Match by fleetwood_id
 
-        res.json({ message: 'Category deleted', subcategories: category.subcategories.map(sub => sub.name) });
+        // Find and delete the category by fleetwood_id
+        const category = await Category.findOneAndDelete({ fleetwood_id });
+
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        res.status(200).json({ message: 'Category deleted successfully' });
     } catch (err) {
-        res.status(500).json({ message: 'Error deleting category' });
+        console.error('Error deleting category:', err.message);
+        res.status(500).json({ message: 'Failed to delete category' });
     }
 };
 
-// Add subcategory
+// Add a subcategory
 export const addSubcategory = async (req, res) => {
     try {
-        const { name, parentId } = req.body;
+        const { fleetwood_id, subcategoryName } = req.body;
 
-        // Validate parent category
-        const parentCategory = await Category.findById(parentId);
-        if (!parentCategory) {
-            return res.status(404).json({ message: 'Parent category not found' });
-        }
-
-        // Check if the subcategory already exists under the parent
-        const existingSubcategory = parentCategory.subcategories.find(sub => sub.name === name);
-        if (existingSubcategory) {
-            return res.status(400).json({ message: 'Subcategory already exists under this category' });
+        // Find the category by fleetwood_id
+        const category = await Category.findOne({ fleetwood_id });
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
         }
 
         // Add the new subcategory
-        parentCategory.subcategories.push({ name });
-        await parentCategory.save();
+        category.subcategories.push({ name: subcategoryName });
+        await category.save();
 
-        res.status(201).json({ message: 'Subcategory added successfully', parentCategory });
+        res.status(200).json({ message: 'Subcategory added successfully', category });
     } catch (err) {
         console.error('Error adding subcategory:', err.message);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Failed to add subcategory' });
     }
 };
 
-
-
-
+// Delete a subcategory
 export const deleteSubcategory = async (req, res) => {
     try {
-        const subcategoryId = req.params.id;
+        const { id: fleetwood_id } = req.params; // Match by fleetwood_id
+        const { subcategoryName } = req.body;
 
-        // Find the parent category that contains the subcategory
-        const category = await Category.findOneAndUpdate(
-            { 'subcategories._id': subcategoryId }, // Locate subcategory by its _id
-            { $pull: { subcategories: { _id: subcategoryId } } }, // Remove subcategory
-            { new: true } // Return the updated document
-        );
-
+        // Find the category by fleetwood_id
+        const category = await Category.findOne({ fleetwood_id });
         if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        // Remove the subcategory by name
+        const subcategoryIndex = category.subcategories.findIndex(
+            (sub) => sub.name === subcategoryName
+        );
+        if (subcategoryIndex === -1) {
             return res.status(404).json({ message: 'Subcategory not found' });
         }
+
+        category.subcategories.splice(subcategoryIndex, 1);
+        await category.save();
 
         res.status(200).json({ message: 'Subcategory deleted successfully', category });
     } catch (err) {
         console.error('Error deleting subcategory:', err.message);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Failed to delete subcategory' });
     }
 };
-
-

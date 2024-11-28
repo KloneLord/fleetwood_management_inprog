@@ -65,66 +65,51 @@
     <button id="deleteSubcategoryBtn" class="btn btn-danger mt-2">Delete Subcategory</button>
   </div>
 </div>
+
 <script>
   let categories = [];
-  let subcategories = [];
 
-  // Fetch categories and subcategories and populate dropdowns
+  // Fetch categories and subcategories based on the user's license number
+  // Fetch categories and subcategories based on the user's license number
   const fetchCategoriesAndSubcategories = async () => {
     try {
-      const response = await axios.get('/api/categories');
-      categories = response.data.categories;
-      subcategories = response.data.subcategories;
+      const sessionData = await fetchSessionData();
+      const licenseNumber = sessionData.lic_no;
+
+      if (!licenseNumber) {
+        alert('License number is missing. Please log in.');
+        return;
+      }
+
+      const response = await axios.get('/api/categories', { params: { licenseNumber } });
+      categories = response.data;
 
       // Populate dropdowns
       populateDropdown('liveCategoriesDropdown', categories);
       populateDropdown('parentCategoryDropdown', categories);
       populateDropdown('deleteCategoryDropdown', categories);
     } catch (err) {
-      console.error('Error fetching categories:', err.message);
+      console.error('Error fetching categories:', err.response?.data || err.message);
     }
   };
 
-  // Populate dropdown helper function
-  const populateDropdown = (dropdownId, items, filterFn = null) => {
-    const dropdown = document.getElementById(dropdownId);
-    dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
 
-    const filteredItems = filterFn ? items.filter(filterFn) : items;
-    const addedItems = new Set();
 
-    filteredItems.forEach(item => {
-      if (!addedItems.has(item._id)) {
-        const option = document.createElement('option');
-        option.value = item._id;
-        option.textContent = item.name;
-        dropdown.appendChild(option);
-        addedItems.add(item._id); // Avoid duplicates
-      }
-    });
-  };
 
-  // Update liveSubcategoriesDropdown when liveCategoriesDropdown changes
-  document.getElementById('liveCategoriesDropdown').addEventListener('change', (e) => {
-    const selectedCategoryId = e.target.value;
-
-    // Filter subcategories by parentId
-    populateDropdown('liveSubcategoriesDropdown', subcategories, sub => sub.parentId === selectedCategoryId);
-  });
 
   // Add Category
   document.getElementById('addCategoryBtn').addEventListener('click', async () => {
+    const sessionData = await fetchSessionData();
+    const licenseNumber = sessionData.lic_no;
     const newCategory = document.getElementById('newCategory').value;
-    if (!newCategory) return alert('Category name is required.');
+
+    if (!newCategory) {
+      alert('Category name is required.');
+      return;
+    }
 
     try {
-      // Check if the category already exists
-      const existingCategory = categories.find(cat => cat.name === newCategory);
-      if (existingCategory) {
-        return alert('Category already exists!');
-      }
-
-      await axios.post('/api/categories', { name: newCategory });
+      await axios.post('/api/categories', { name: newCategory, licenseNumber });
       alert('Category added successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
@@ -132,25 +117,33 @@
     }
   });
 
+  // Populate dropdown helper function
+  const populateDropdown = (dropdownId, items) => {
+    const dropdown = document.getElementById(dropdownId);
+    dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
+
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.fleetwood_id; // Use fleetwood_id
+      option.textContent = item.name;
+      dropdown.appendChild(option);
+    });
+  };
   // Add Subcategory
   document.getElementById('addSubcategoryBtn').addEventListener('click', async () => {
     const parentCategoryId = document.getElementById('parentCategoryDropdown').value;
     const newSubcategory = document.getElementById('newSubcategory').value;
 
     if (!parentCategoryId || !newSubcategory) {
-      return alert('Parent category and subcategory name are required.');
+      alert('Parent category and subcategory name are required.');
+      return;
     }
 
     try {
-      // Check if the subcategory already exists under the parent category
-      const existingSubcategory = subcategories.find(
-              sub => sub.name === newSubcategory && sub.parentId === parentCategoryId
-      );
-      if (existingSubcategory) {
-        return alert('Subcategory already exists under this category!');
-      }
-
-      await axios.post('/api/categories/subcategories', { name: newSubcategory, parentId: parentCategoryId });
+      await axios.post('/api/categories/subcategories', {
+        fleetwood_id: parentCategoryId,
+        subcategoryName: newSubcategory,
+      });
       alert('Subcategory added successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
@@ -162,33 +155,34 @@
   document.getElementById('deleteCategoryBtn').addEventListener('click', async () => {
     const categoryId = document.getElementById('deleteCategoryDropdown').value;
 
-    if (!categoryId) return alert('Select a category to delete.');
+    if (!categoryId) {
+      alert('Select a category to delete.');
+      return;
+    }
 
     try {
-      const response = await axios.delete(`/api/categories/${categoryId}`);
-      alert(`Deleted category. Subcategories affected: ${response.data.subcategories.join(', ')}`);
+      await axios.delete(`/api/categories/${categoryId}`);
+      alert('Category deleted successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
       console.error('Error deleting category:', err.message);
     }
   });
 
-  // Update deleteSubcategoryDropdown when deleteCategoryDropdown changes
-  document.getElementById('deleteCategoryDropdown').addEventListener('change', (e) => {
-    const selectedCategoryId = e.target.value;
-
-    // Filter subcategories by parentId
-    populateDropdown('deleteSubcategoryDropdown', subcategories, sub => sub.parentId === selectedCategoryId);
-  });
-
   // Delete Subcategory
   document.getElementById('deleteSubcategoryBtn').addEventListener('click', async () => {
-    const subcategoryId = document.getElementById('deleteSubcategoryDropdown').value;
+    const subcategoryName = document.getElementById('deleteSubcategoryDropdown').value;
+    const parentCategoryId = document.getElementById('deleteCategoryDropdown').value;
 
-    if (!subcategoryId) return alert('Select a subcategory to delete.');
+    if (!subcategoryName || !parentCategoryId) {
+      alert('Select a category and subcategory to delete.');
+      return;
+    }
 
     try {
-      await axios.delete(`/api/subcategories/${subcategoryId}`);
+      await axios.delete(`/api/categories/subcategories/${parentCategoryId}`, {
+        data: { subcategoryName },
+      });
       alert('Subcategory deleted successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
@@ -196,10 +190,15 @@
     }
   });
 
+  // Fetch session data
+  const fetchSessionData = async () => {
+    const response = await axios.get('/api/sessions/info');
+    return response.data;
+  };
+
   // Initialize the page
   document.addEventListener('DOMContentLoaded', fetchCategoriesAndSubcategories);
 </script>
-
 
 </body>
 </html>

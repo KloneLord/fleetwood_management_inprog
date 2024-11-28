@@ -11,124 +11,131 @@
 <div class="container mt-5">
   <h1>Manage Markups</h1>
 
-  <!-- Select and Display Markup -->
-  <div class="mb-4">
-    <h2>Current Markups</h2>
-    <div class="row g-3 align-items-center">
-      <div class="col-md-6">
-        <label for="markupDropdown" class="form-label">Select Markup</label>
-        <select id="markupDropdown" class="form-select">
-          <option value="" disabled selected>Select a markup</option>
-          <!-- Markups will be dynamically populated -->
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label for="selectedMarkupModifier" class="form-label">Modifier (%)</label>
-        <input type="number" id="selectedMarkupModifier" class="form-control" disabled>
-      </div>
-      <div class="col-md-3">
-        <button id="deleteMarkupBtn" class="btn btn-danger mt-4">Delete Markup</button>
-      </div>
+  <!-- Table to Display Existing Markups -->
+  <table class="table mt-4" id="markupTable">
+    <thead>
+    <tr>
+      <th>Markup Title</th>
+      <th>Value (%)</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Markups will be dynamically loaded here -->
+    </tbody>
+  </table>
+
+  <!-- Add New Markup Form -->
+  <form id="markupForm">
+    <div class="mb-3">
+      <label for="markupTitle" class="form-label">Markup Title</label>
+      <input type="text" id="markupTitle" class="form-control" name="markupTitle" placeholder="Enter a title" required>
     </div>
-  </div>
-
-  <hr>
-
-  <!-- Add or Update Markup Form -->
-  <div>
-    <h2>Add or Update Markup</h2>
-    <form id="markupForm">
-      <!-- Title -->
-      <div class="mb-3">
-        <label for="markupTitle" class="form-label">Markup Title</label>
-        <input type="text" class="form-control" id="markupTitle" name="markupTitle" required>
-      </div>
-
-      <!-- Modifier -->
-      <div class="mb-3">
-        <label for="markupModifier" class="form-label">Modifier (%)</label>
-        <input type="number" class="form-control" id="markupModifier" name="markupModifier" required>
-      </div>
-
-      <!-- Submit Button -->
-      <button type="submit" class="btn btn-primary">Save Markup</button>
-    </form>
-  </div>
+    <div class="mb-3">
+      <label for="markupModifier" class="form-label">Modifier (%)</label>
+      <input type="number" id="markupModifier" class="form-control" name="markupModifier" placeholder="Enter a percentage" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Markup</button>
+  </form>
 </div>
 
 <script>
-  // Fetch and populate markups
-  async function fetchMarkups() {
+  // Fetch and populate existing markups in the table
+  async function loadMarkups() {
     try {
-      const response = await axios.get('/api/markups');
+      const sessionData = await fetchSessionData();
+      if (!sessionData || !sessionData.lic_no) {
+        alert('License number missing. Please log in.');
+        return;
+      }
+
+      const response = await axios.get('/api/markups', { params: { licenseNumber: sessionData.lic_no } });
       const markups = response.data;
 
-      // Populate dropdown
-      const markupDropdown = document.getElementById('markupDropdown');
-      markupDropdown.innerHTML = '<option value="" disabled selected>Select a markup</option>';
+      const markupTableBody = document.querySelector('#markupTable tbody');
+      markupTableBody.innerHTML = ''; // Clear existing entries
 
-      markups.forEach(markup => {
-        const option = document.createElement('option');
-        option.value = markup._id;
-        option.textContent = markup.title;
-        option.dataset.modifier = markup.modifier; // Store modifier for display
-        markupDropdown.appendChild(option);
+      // Populate the table with existing markups
+      markups.forEach((markup) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${markup.title}</td>
+            <td>${markup.modifier}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="deleteMarkup('${markup._id}')">Delete</button>
+            </td>
+          `;
+        markupTableBody.appendChild(row);
       });
     } catch (err) {
-      console.error('Error fetching markups:', err.message);
+      console.error('Error loading markups:', err.message);
     }
   }
 
-  // Handle selection change in dropdown
-  document.getElementById('markupDropdown').addEventListener('change', function () {
-    const selectedOption = this.options[this.selectedIndex];
-    const modifier = selectedOption.dataset.modifier || '';
-    const modifierInput = document.getElementById('selectedMarkupModifier');
-    modifierInput.value = modifier; // Display the selected modifier
-  });
+  // Save a new markup
+  document.getElementById('markupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  // Save a new or updated markup
-  async function saveMarkup(event) {
-    event.preventDefault();
+    const sessionData = await fetchSessionData();
+    if (!sessionData || !sessionData.lic_no) {
+      alert('License number missing. Please log in.');
+      return;
+    }
 
     const title = document.getElementById('markupTitle').value;
     const modifier = parseFloat(document.getElementById('markupModifier').value);
+    const licenseNumber = sessionData.lic_no;
 
     try {
-      await axios.post('/api/markups', { title, modifier });
+      await axios.post('/api/markups', { title, modifier, licenseNumber });
       alert('Markup saved successfully!');
       document.getElementById('markupForm').reset();
-      await fetchMarkups();
+      await loadMarkups(); // Reload the table
     } catch (err) {
       console.error('Error saving markup:', err.message);
+      alert('Failed to save markup.');
     }
-  }
+  });
 
-  // Delete selected markup
-  async function deleteMarkup() {
-    const markupDropdown = document.getElementById('markupDropdown');
-    const selectedMarkupId = markupDropdown.value;
-
-    if (!selectedMarkupId) {
-      return alert('Please select a markup to delete.');
-    }
-
+  // Delete a markup
+  async function deleteMarkup(markupId) {
     try {
-      await axios.delete(`/api/markups/${selectedMarkupId}`);
-      alert('Markup deleted successfully!');
-      document.getElementById('selectedMarkupModifier').value = ''; // Clear the modifier display
-      await fetchMarkups(); // Refresh dropdown
+      const response = await axios.delete(`/api/markups/${markupId}`);
+      if (response.status === 200) {
+        alert('Markup deleted successfully!');
+        await loadMarkups(); // Reload the table
+      } else {
+        alert('Failed to delete markup.');
+      }
     } catch (err) {
       console.error('Error deleting markup:', err.message);
+      alert('Failed to delete markup.');
     }
   }
 
-  // Attach event listeners
-  document.getElementById('markupForm').addEventListener('submit', saveMarkup);
-  document.getElementById('deleteMarkupBtn').addEventListener('click', deleteMarkup);
+  // Initialize session and load data
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchSessionData();
+    await loadMarkups();
+  });
 
-  // Fetch markups on page load
-  document.addEventListener('DOMContentLoaded', fetchMarkups);
+  // Fetch session data
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) {
+        console.error('Failed to fetch session data');
+        return null;
+      }
+
+      const data = await response.json();
+      console.log('Session data received:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
+    }
+  }
 </script>
 </body>
 </html>

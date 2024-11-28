@@ -4,7 +4,7 @@ import {
     addCategory,
     deleteCategory,
     addSubcategory,
-    deleteSubcategory
+    deleteSubcategory,
 } from '../../controllers/categoryController.js';
 
 const router = express.Router();
@@ -19,15 +19,9 @@ router.post('/', addCategory);
 router.delete('/:id', deleteCategory);
 
 // Add a new subcategory
-router.post('/subcategories', (req, res, next) => {
-    console.log('POST /api/categories/subcategories route accessed');
-    next(); // Log the route access and proceed to the controller
-}, addSubcategory);
+router.post('/subcategories', addSubcategory);
 
 // Delete a subcategory
-router.delete('/subcategories/:id', (req, res, next) => {
-    console.log('DELETE /api/categories/subcategories/:id accessed with ID:', req.params.id);
-    next(); // Log the route access and proceed to the controller
-}, deleteSubcategory);
+router.delete('/subcategories/:id', deleteSubcategory);
 
 export default router;
