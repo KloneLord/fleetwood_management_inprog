@@ -11,55 +11,62 @@
 <div class="container mt-5">
   <h1>Manage Categories and Subcategories</h1>
 
-  <!-- Live Dropdowns -->
-  <div class="d-flex align-items-center mb-3">
-    <div class="me-3 flex-grow-1" style="max-width: 300px">
-      <label for="liveCategoriesDropdown" class="form-label">Live Categories</label>
-      <select id="liveCategoriesDropdown" class="form-control">
-        <option value="" disabled selected>Select a category</option>
-      </select>
-    </div>
-    <div class="flex-grow-1" style="max-width: 300px">
-      <label for="liveSubcategoriesDropdown" class="form-label">Live Subcategories</label>
-      <select id="liveSubcategoriesDropdown" class="form-control">
-        <option value="" disabled selected>Select a subcategory</option>
-      </select>
-    </div>
+  <!-- Live Categories and Subcategories -->
+  <div class="mb-3">
+    <label for="liveCategoriesDropdown" class="form-label">Live Categories</label>
+    <select id="liveCategoriesDropdown" class="form-control">
+      <option value="" disabled selected>Select a category</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="liveSubcategoriesDropdown" class="form-label">Live Subcategories</label>
+    <select id="liveSubcategoriesDropdown" class="form-control">
+      <option value="" disabled selected>Select a subcategory</option>
+    </select>
   </div>
 
   <hr>
 
-  <!-- Add New Category and Subcategory -->
-  <div class="d-flex align-items-center mb-3">
-    <div class="me-3 flex-grow-1" style="max-width: 300px">
-      <label for="categoryInput" class="form-label">Category</label>
-      <input id="categoryInput" type="text" class="form-control" placeholder="Enter or select a category">
-    </div>
-    <div class="me-3 flex-grow-1" style="max-width: 300px">
-      <label for="subcategoryInput" class="form-label">Subcategory</label>
-      <input id="subcategoryInput" type="text" class="form-control" placeholder="Enter subcategory">
-    </div>
+  <!-- Add Category -->
+  <div class="mb-3">
+    <label for="newCategory" class="form-label">Add Category</label>
+    <input type="text" id="newCategory" class="form-control">
+    <button id="addCategoryBtn" class="btn btn-primary mt-2">Save Category</button>
   </div>
-  <button id="saveCategoryBtn" class="btn btn-primary mt-2">Save</button>
 
   <hr>
 
-  <!-- Management Table -->
-  <table class="table">
-    <thead>
-    <tr>
-      <th>Category</th>
-      <th>Subcategory</th>
-      <th>Used By</th>
-      <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody id="categoriesTableBody"></tbody>
-  </table>
+  <!-- Add Subcategory -->
+  <div class="mb-3">
+    <label for="parentCategoryDropdown" class="form-label">Parent Category</label>
+    <select id="parentCategoryDropdown" class="form-control"></select>
+  </div>
+  <div class="mb-3">
+    <label for="newSubcategory" class="form-label">Add Subcategory</label>
+    <input type="text" id="newSubcategory" class="form-control">
+    <button id="addSubcategoryBtn" class="btn btn-primary mt-2">Save Subcategory</button>
+  </div>
+
+  <hr>
+
+  <!-- Delete Category -->
+  <div class="mb-3">
+    <label for="deleteCategoryDropdown" class="form-label">Delete Category</label>
+    <select id="deleteCategoryDropdown" class="form-control"></select>
+    <button id="deleteCategoryBtn" class="btn btn-danger mt-2">Delete Category</button>
+  </div>
+
+  <hr>
+
+  <!-- Delete Subcategory -->
+  <div class="mb-3">
+    <label for="deleteSubcategoryDropdown" class="form-label">Delete Subcategory</label>
+    <select id="deleteSubcategoryDropdown" class="form-control"></select>
+    <button id="deleteSubcategoryBtn" class="btn btn-danger mt-2">Delete Subcategory</button>
+  </div>
 </div>
 
 <script>
-<<<<<<< HEAD
   let categories = [];
 
   // Fetch categories and subcategories based on the user's license number
@@ -107,121 +114,9 @@
       await fetchCategoriesAndSubcategories();
     } catch (err) {
       console.error('Error adding category:', err.message);
-=======
-  // Fetch session data to get licenseNumber
-  async function fetchSessionData() {
-    try {
-      const response = await fetch('/api/sessions/info');
-      if (!response.ok) throw new Error('Failed to fetch session data');
-      const data = await response.json();
-      console.log('Session data:', data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching session data:', error);
-      return null;
     }
-  }
+  });
 
-  // Fetch categories from the server
-  const fetchCategories = async () => {
-    const sessionData = await fetchSessionData();
-    if (!sessionData) return;
-
-    const licenseNumber = sessionData.lic_no;
-
-    try {
-      const res = await axios.get('/api/categories', { params: { licenseNumber } });
-      const categories = res.data;
-
-      // Clear existing dropdown and table data
-      const categoriesDropdown = document.getElementById('liveCategoriesDropdown');
-      const subcategoriesDropdown = document.getElementById('liveSubcategoriesDropdown');
-      const tableBody = document.getElementById('categoriesTableBody');
-      categoriesDropdown.innerHTML = '<option value="" disabled selected>Select a category</option>';
-      subcategoriesDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
-      tableBody.innerHTML = '';
-
-      // Populate dropdowns and table
-      categories.forEach((category) => {
-        // Populate categories dropdown
-        const categoryOption = document.createElement('option');
-        categoryOption.value = category.name;
-        categoryOption.textContent = category.name;
-        categoriesDropdown.appendChild(categoryOption);
-
-        // Populate table with subcategories
-        category.subcategories.forEach((subcategory) => {
-          const row = `<tr>
-            <td>${category.name}</td>
-            <td>${subcategory}</td>
-            <td>${category.usedBy ?? 0}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="deleteCategory('${category.fleetwood_id}')">Delete</button></td>
-          </tr>`;
-          tableBody.innerHTML += row;
-        });
-      });
-
-      // Dynamically update subcategories dropdown when a category is selected
-      categoriesDropdown.addEventListener('change', (e) => {
-        const selectedCategory = e.target.value;
-        subcategoriesDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
-        const selectedCat = categories.find((cat) => cat.name === selectedCategory);
-        if (selectedCat) {
-          selectedCat.subcategories.forEach((subcat) => {
-            const subOption = document.createElement('option');
-            subOption.value = subcat;
-            subOption.textContent = subcat;
-            subcategoriesDropdown.appendChild(subOption);
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
-
-  // Save category and subcategory
-  const saveCategory = async () => {
-    const sessionData = await fetchSessionData();
-    if (!sessionData) return;
-
-    const licenseNumber = sessionData.lic_no;
-    const category = document.getElementById('categoryInput').value.trim();
-    const subcategory = document.getElementById('subcategoryInput').value.trim();
-
-    if (!category || !subcategory) {
-      alert('Both fields are required.');
-      return;
-    }
-
-    try {
-      await axios.post('/api/categories', {
-        licenseNumber,
-        name: category,
-        subcategories: subcategory,
-        usedBy: 0,
-      });
-
-      alert('Category and Subcategory saved successfully!');
-      await fetchCategories();
-    } catch (error) {
-      console.error('Error saving category:', error.response?.data || error.message);
-    }
-  };
-
-  // Delete category
-  const deleteCategory = async (fleetwood_id) => {
-    try {
-      await axios.delete(`/api/categories/${fleetwood_id}`);
-      alert('Category deleted successfully!');
-      await fetchCategories();
-    } catch (error) {
-      console.error('Error deleting category:', error.response?.data || error.message);
->>>>>>> de7a00b (dont do it)
-    }
-  };
-
-<<<<<<< HEAD
   // Populate dropdown helper function
   const populateDropdown = (dropdownId, items) => {
     const dropdown = document.getElementById(dropdownId);
@@ -303,13 +198,6 @@
 
   // Initialize the page
   document.addEventListener('DOMContentLoaded', fetchCategoriesAndSubcategories);
-=======
-  // Add event listener to save button
-  document.getElementById('saveCategoryBtn').addEventListener('click', saveCategory);
-
-  // Load categories on page load
-  fetchCategories();
->>>>>>> de7a00b (dont do it)
 </script>
 
 </body>
