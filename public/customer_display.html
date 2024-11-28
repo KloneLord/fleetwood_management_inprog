@@ -92,6 +92,10 @@
 <div class="container">
     <div class="customer-card">
         <h2 id="customerName">Customer Name</h2>
+        <div class="field"><span>Fleetwood ID:</span> <span id="fleetwoodId">N/A</span></div>
+        <div class="field"><span>Added By:</span> <span id="addedBy">N/A</span></div>
+        <div class="field"><span>License Number:</span> <span id="licNumber">N/A</span></div>
+        <div class="field"><span>Active:</span> <span id="activeStatus">N/A</span></div>
         <div class="field"><span>Contact Name:</span> <span id="contactName">N/A</span></div>
         <div class="field"><span>Phone Number:</span> <span id="phoneNumber">N/A</span></div>
         <div class="field"><span>Mobile Number:</span> <span id="mobileNumber">N/A</span></div>
@@ -109,12 +113,68 @@
 
     <div class="buttons">
         <button class="btn btn-primary" style="min-width: 100px" onclick="editCustomer()">Edit</button>
-        <button class="btn btn-primary" style="min-width: 100px" onclick="closePage()">Close</button>
+        <button class="btn btn-secondary" style="min-width: 100px" onclick="closePage()">Close</button>
     </div>
 </div>
 
-
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // Fetch customer data from the server
+    async function fetchCustomerDetails() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const customerId = urlParams.get('id');
+
+        if (!customerId) {
+            alert("Customer ID not provided!");
+            return;
+        }
+
+        try {
+            const response = await axios.get(`/api/customers/${customerId}`);
+            const customer = response.data;
+
+            document.getElementById('customerName').textContent = customer.customerName || 'N/A';
+            document.getElementById('fleetwoodId').textContent = customer.fleetwood_id || 'N/A';
+            document.getElementById('addedBy').textContent = customer.added_by || 'N/A';
+            document.getElementById('licNumber').textContent = customer.lic_number || 'N/A';
+            document.getElementById('activeStatus').textContent = customer.active ? 'True' : 'False';
+            document.getElementById('contactName').textContent = customer.contactName || 'N/A';
+            document.getElementById('phoneNumber').textContent = customer.phoneNumber || 'N/A';
+            document.getElementById('mobileNumber').textContent = customer.mobileNumber || 'N/A';
+            document.getElementById('emailAddress').textContent = customer.emailAddress || 'N/A';
+            document.getElementById('street').textContent = customer.street || 'N/A';
+            document.getElementById('city').textContent = customer.city || 'N/A';
+            document.getElementById('postalCode').textContent = customer.postalCode || 'N/A';
+            document.getElementById('region').textContent = customer.region || 'N/A';
+
+            const jobSitesContainer = document.getElementById('jobSitesContainer');
+            jobSitesContainer.innerHTML = '';
+            customer.jobSites.forEach(site => {
+                const siteDiv = document.createElement('div');
+                siteDiv.className = 'job-site';
+                siteDiv.textContent = site;
+                jobSitesContainer.appendChild(siteDiv);
+            });
+        } catch (error) {
+            console.error('Error fetching customer details:', error);
+            alert('Failed to fetch customer details.');
+        }
+    }
+
+    function editCustomer() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const customerId = urlParams.get('id');
+        if (customerId) {
+            window.location.href = `/customer_edit.html?id=${customerId}`;
+        }
+    }
+
+    function closePage() {
+        window.close();
+    }
+
+    // Fetch and display customer details on page load
+    document.addEventListener('DOMContentLoaded', fetchCustomerDetails);
+</script>
 </body>
 </html>

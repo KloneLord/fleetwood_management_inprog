@@ -4,9 +4,15 @@ import { ensureAuthenticated } from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/info', ensureAuthenticated, (req, res, next) => {
-    console.log('Received request for /api/sessions/info');
-    next(); // Proceed to the controller
-}, getSessionInfo);
+// Define the route to retrieve session info
+router.get(
+    '/info',
+    ensureAuthenticated, // Middleware to ensure user is authenticated
+    (req, res, next) => {
+        console.log('Received request for /api/sessions/info');
+        next(); // Proceed to the controller
+    },
+    getSessionInfo // Controller to handle the response
+);
 
 export default router;

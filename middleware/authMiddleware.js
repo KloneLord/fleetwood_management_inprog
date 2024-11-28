@@ -26,11 +26,12 @@ export const authMiddleware = (req, res, next) => {
 };
 export const ensureAuthenticated = (req, res, next) => {
     if (req.session && req.session.user) {
-        next();
-    } else {
-        res.status(401).json({ message: 'Unauthorized: No active session' });
+        return next(); // User is authenticated, proceed
     }
+    console.log('No active session found');
+    return res.status(401).json({ error: 'Unauthorized' });
 };
+
 
 // Middleware to check user roles
 export const roleMiddleware = (allowedRoles) => {

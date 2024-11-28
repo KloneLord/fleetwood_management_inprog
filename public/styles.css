@@ -378,3 +378,34 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow */
     transform: scale(0.98); /* Slight press effect */
 }
+
+
+
+
+
+.fleet-button-slim {
+    background-color: #20C997;
+    color: #fff;
+    border: none;
+    border-radius: 4px; /* Less rounded corners */
+    padding: 4px 8px; /* Slimmer padding */
+    font-size: 12px; /* Smaller font size */
+    font-weight: 600; /* Medium-bold text */
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.2s ease, transform 0.2s ease; /* Quicker hover effect */
+    max-height: 35px; /* Reduced height */
+    min-width: 80px; /* Ensure consistent width */
+}
+
+.fleet-button-slim:hover {
+    background-color: #18A37E;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); /* Slightly increased shadow */
+    transform: scale(1.03); /* Subtle zoom effect */
+}
+
+.fleet-button-slim:active {
+    background-color: #148F70;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+    transform: scale(0.97); /* Slight press effect */
+}

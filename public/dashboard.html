@@ -22,6 +22,9 @@
       Welcome <span id="username">User</span>, logged in for
       <span id="session-duration">00:00:00</span>
     </div>
+    <div id="license-info">
+      Logged in under License Number:  <span id="licNoPlace"></span>
+    </div>
 
     <!-- Live Clock + Icons -->
     <div class="icon-section">
@@ -62,7 +65,7 @@
   async function fetchSessionData() {
     try {
       const response = await fetch('/api/sessions/info');
-      if (!response.ok) throw new Error('Failed to fetch session data');
+      if (!response.ok) console.log('Failed to fetch session data');
       const data = await response.json();
 
       // Log session data
@@ -72,6 +75,15 @@
       const usernameElement = document.getElementById('username');
       if (usernameElement) {
         usernameElement.innerText = data.username;
+      }
+
+      // Update the username
+      const licNo = data.lic_no;
+      console.log('norto found licence Number:', licNo);
+
+      const licNoElement = document.getElementById('licNoPlace');
+      if (licNoElement) {
+        licNoElement.innerText = data.lic_no;
       }
 
       // Start the session timer

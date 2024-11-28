@@ -1,39 +1,7 @@
 ﻿import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { jwtSecret } from '../config/jwtConfig.js';
 
-// Register a new user
-export const registerUser = async (req, res) => {
-    try {
-        const { username, email, password, role } = req.body;
-
-        if (!username || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
-
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({
-            username,
-            email,
-            password: hashedPassword,
-            role: role || 'worker', // Default role is 'worker' if not provided
-        });
-        await newUser.save();
-
-        const token = jwt.sign({ id: newUser._id, role: newUser.role }, jwtSecret, { expiresIn: '1h' });
-
-        res.status(201).json({ token });
-    } catch (err) {
-        console.error('Error registering user:', err.message);
-        res.status(500).json({ message: 'Server error' });
-    }
-};
 
 // Log in a user
 export const loginUser = async (req, res) => {
@@ -49,18 +17,20 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (password !== user.password) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        // Store the user information in the session, including `lic_no`
         req.session.user = {
             id: user._id,
             username: user.username,
             email: user.email,
-            role: user.role, // Include role in the session
+            lic_no: user.lic_no, // Include the license number
+            role: user.role,
         };
-        req.session.loginTime = new Date(); // Always store as a Date object
+        req.session.loginTime = new Date(); // Store login time
+
         console.log('Session created on login:', req.session);
 
         res.status(200).json({ message: 'Login successful', user: req.session.user });
@@ -69,6 +39,38 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// Register a new user
+export const registerUser = async (req, res) => {
+    try {
+        const { username, email, password, role } = req.body;
+
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const newUser = new User({
+            username,
+            email,
+            password, // Save password directly (not recommended in production)
+            role: role || 'worker', // Default role is 'worker' if not provided
+        });
+        await newUser.save();
+
+        const token = jwt.sign({ id: newUser._id, role: newUser.role }, jwtSecret, { expiresIn: '1h' });
+
+        res.status(201).json({ token });
+    } catch (err) {
+        console.error('Error registering user:', err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 
 // Get user profile
 export const getUserProfile = async (req, res) => {

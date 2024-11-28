@@ -1,11 +1,14 @@
-const express = require('express');
+import express from 'express';
+import {archiveJob, createJob, getJobs, getJobById } from '../../controllers/jobController.js';
+
 const router = express.Router();
-const { getCustomersWithJobSites, createJob } = require('../../controllers/jobController');
 
-// Route to get customers and their job sites
-router.get('/customers-with-job-sites', getCustomersWithJobSites);
-
-// Route to create a new job
 router.post('/', createJob);
 
-module.exports = router;
+router.get('/', getJobs);
+
+router.get('/:id', getJobById); // Add route for fetching a job by ID
+
+router.post('/archive/:id', archiveJob);
+
+export default router;

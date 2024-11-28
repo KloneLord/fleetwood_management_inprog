@@ -145,7 +145,9 @@
       Welcome <span id="username">User</span>, logged in for
       <span id="session-duration">00:00:00</span>
     </div>
-
+    <div id="license-info">
+      Logged in under License Number:  <span id="licNoPlace"></span>
+    </div>
     <!-- Live Clock + Icons -->
     <div class="icon-section">
       <div>
@@ -168,7 +170,6 @@
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar"></div>
 
-<!-- Main Content -->
 <div class="content-wrapper">
   <main class="container">
     <div class="container mt-5">
@@ -213,9 +214,24 @@
           <input type="text" class="form-control" id="region" name="region">
         </div>
         <div id="jobSitesContainer" class="form-group">
-          <label>Job Sites</label><hr><hr>
+          <label>Job Sites</label>        <input type="text" class="form-control" id="siteName" placeholder="Enter site name"><input type="text" class="form-control" id="siteAddress" placeholder="Enter site address">
+          <div class="spacer-lg"></div>
+
         </div>
-        <div class="button-container">
+        <div class="row">
+          <table class="table mt-4">
+            <thead>
+            <tr>
+              <th>Row</th>
+              <th>Job Site</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="jobSitesTable"></tbody> <!-- Make sure this exists -->
+          </table>
+        </div>
+
+      <div class="button-container">
           <button type="button" style="max-width: 150px; margin-left: 200px" class="btn btn-sm btn-secondary" onclick="addJobSite()">Add Job Site</button>
           <div class="line-spacer"></div>
           <button type="submit" style="max-width: 200px" class="fleet-button">Add Customer</button>
@@ -226,44 +242,96 @@
     </div>
   </main>
 </div>
-
 <script>
-  // Add job site row
-  function addJobSite(siteName = '', siteAddress = '') {
-    const container = document.getElementById('jobSitesContainer');
-    const row = document.createElement('div');
-    row.className = 'row mb-2';
+  let rowNumber = 0; // Declare rowNumber globally to persist its value
+  const jobSitesArray = []; // Declare jobSitesArray globally as an array
+
+  // Add job site to the list and display it in the table
+  function addJobSite() {
+    const siteName = document.getElementById('siteName').value.trim();
+    const siteAddress = document.getElementById('siteAddress').value.trim();
+
+    if (!siteName || !siteAddress) {
+      alert('Both site name and address are required.');
+      return;
+    }
+
+    // Add the job site to the jobSitesArray
+    const jobSiteFull = `${siteName} - ${siteAddress}`;
+    jobSitesArray.push(jobSiteFull);
+
+    // Increment the row number for each new row
+    rowNumber++;
+
+    // Add the job site to the table
+    const table = document.getElementById('jobSitesTable');
+    const row = document.createElement('tr');
     row.innerHTML = `
-            <div class="col">
-                <input type="text" class="form-control" name="siteName" placeholder="Site Name" value="${siteName}">
-            </div>
-            <div class="col">
-                <input type="text" class="form-control" name="siteAddress" placeholder="Site Address" value="${siteAddress}">
-                   <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">Remove</button>
-            </div>
-            `;
-    container.appendChild(row);
+    <td class="row-number" style="color: #333333">${rowNumber}</td>
+    <td class="site-info">${jobSiteFull}</td>
+    <td>
+      <button type="button" class="btn btn-danger btn-sm" onclick="deleteJobSite(this, ${rowNumber - 1})">Delete</button>
+    </td>
+  `;
+    table.appendChild(row);
+
+    // Clear the input fields
+    document.getElementById('siteName').value = '';
+    document.getElementById('siteAddress').value = '';
+
+    console.log("Job Sites Array After Add:", jobSitesArray);
   }
 
-  // Submit form
+  // Delete a job site and update the row numbers
+  function deleteJobSite(button, arrayIndex) {
+    const row = button.closest('tr');
+    row.remove(); // Remove the table row
+
+    // Remove the site from the jobSitesArray
+    if (arrayIndex > -1) {
+      jobSitesArray.splice(arrayIndex, 1);
+    }
+
+    // Update row numbers in the table
+    const rows = document.querySelectorAll('#jobSitesTable tr');
+    rowNumber = 0; // Reset the row number
+    rows.forEach((row, index) => {
+      rowNumber = index + 1;
+      const rowNumberCell = row.querySelector('.row-number');
+      if (rowNumberCell) {
+        rowNumberCell.textContent = rowNumber; // Update the row number
+      }
+    });
+
+    console.log("Job Sites Array After Delete:", jobSitesArray);
+  }
+
+  // Submit form with customer data
   document.getElementById('customerForm').addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
-    data.jobSites = Array.from(document.querySelectorAll('#jobSitesContainer .row')).map(row => ({
-      siteName: row.querySelector('input[name="siteName"]').value,
-      siteAddress: row.querySelector('input[name="siteAddress"]').value,
-    }));
+
+    // Attach the jobSitesArray to the customer data
+    data.jobSites = jobSitesArray;
+
+    console.log("Data sent to server:", data); // Add this for debugging
 
     try {
-      await axios.post('/api/customers', data);
-      document.getElementById('responseMessage').textContent = 'Customer added successfully';
+      const response = await axios.post('/api/customers', data);
+      document.getElementById('responseMessage').textContent = 'Customer added successfully!';
+      // Reset form and clear job sites
+      event.target.reset();
+      jobSitesArray.length = 0; // Clear the array
+      document.getElementById('jobSitesTable').innerHTML = ''; // Clear the table
     } catch (error) {
+      console.error('Error adding customer:', error);
       document.getElementById('responseMessage').textContent = 'Failed to add customer.';
     }
   });
 </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Sidebar Script -->
@@ -273,7 +341,7 @@
   async function fetchSessionData() {
     try {
       const response = await fetch('/api/sessions/info');
-      if (!response.ok) throw new Error('Failed to fetch session data');
+      if (!response.ok) console.log('Failed to fetch session data');
       const data = await response.json();
 
       // Log session data

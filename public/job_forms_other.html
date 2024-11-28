@@ -91,12 +91,39 @@
         <!-- Job Information -->
         <div class="form-section">
             <div class="tab-container">
-                <button type="button" onclick="window.location.href='job_card.html'" class="card-button"><strong>Job Card</strong></button>
-                <button type="button" onclick="window.location.href='job_customer_details.html'" class="card-button"><strong>Customer Details</strong></button>
-                <button type="button" onclick="window.location.href='job_time_logs.html'" class="card-button"><strong>Time Logs</strong></button>
-                <button type="button" onclick="window.location.href='job_material_logs.html'" class="card-button"><strong>Material Logs</strong></button>
-                <button type="button" onclick="window.location.href='job_forms_other.html'" class="card-button"><strong>Forms and Other</strong></button>
+                <button type="button" id="jobCard" class="card-button"><strong>Job Card</strong></button>
+                <button type="button" id="customerDetails" class="card-button"><strong>Customer Details</strong></button>
+                <button type="button" id="timeLogs" class="card-button"><strong>Time Logs</strong></button>
+                <button type="button" id="materialLogs" class="card-button"><strong>Material Logs</strong></button>
+                <button type="button" id="formsOther" class="card-button"><strong>Forms and Other</strong></button>
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const customerId = sessionStorage.getItem('customerId');
+
+                    if (!customerId) {
+                        alert('No customer selected. Redirecting to customer list.');
+                        window.location.href = '/customers/list'; // Redirect to the customer list if no customerId
+                        return;
+                    }
+
+                    // Navigation setup without re-setting sessionStorage
+                    const setupNavigation = (buttonId, targetUrl) => {
+                        const button = document.getElementById(buttonId);
+                        button.addEventListener('click', () => {
+                            window.location.href = targetUrl; // Navigate to the target URL
+                        });
+                    };
+
+                    setupNavigation('jobCard', '/job_card.html');
+                    setupNavigation('customerDetails', '/job_customer_details.html');
+                    setupNavigation('timeLogs', '/job_time_logs.html');
+                    setupNavigation('materialLogs', '/job_material_logs.html');
+                    setupNavigation('formsOther', '/job_forms_other.html');
+                });
+            </script>
+
 
         </div>
         <div class="form-section">

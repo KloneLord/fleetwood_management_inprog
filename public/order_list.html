@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <!-- Bootstrap CSS -->
+  <title>Orders</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="styles.css" rel="stylesheet">
 </head>
 <body>
 <!-- Top Navigation -->
@@ -45,15 +44,32 @@
 <!-- Main Content -->
 <div class="content-wrapper">
   <main class="container">
-    <h1>Welcome to the Dashboard</h1>
-    <p>This is where the main dashboard content will go.</p>
+    <h4>Orders</h4>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Order Number</th>
+        <th>Supplier</th>
+        <th>Total Amount</th>
+        <th>Due Date</th>
+        <th>User</th>
+      </tr>
+      </thead>
+      <tbody>
+      <!-- Data rows will be dynamically added here -->
+      </tbody>
+    </table>
+
+
   </main>
 </div>
 
-<!-- Bootstrap Bundle JS -->
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Sidebar Script -->
 <script src="/utils/sidebar.js"></script>
+
 <script>
   // Fetch session data from the server
   async function fetchSessionData() {
@@ -62,13 +78,16 @@
       if (!response.ok) throw new Error('Failed to fetch session data');
       const data = await response.json();
 
+      // Log session data
       console.log('Session data received:', data);
 
+      // Update the username
       const usernameElement = document.getElementById('username');
       if (usernameElement) {
         usernameElement.innerText = data.username;
       }
 
+      // Start the session timer
       startSessionTimer(data.loginTime);
 
       return data;
@@ -78,8 +97,10 @@
     }
   }
 
+  // Start a session duration timer
   function startSessionTimer(loginTime) {
     const loginTimestamp = new Date(loginTime).getTime();
+
     if (isNaN(loginTimestamp)) {
       console.error('Invalid loginTime:', loginTime);
       return;
@@ -94,11 +115,14 @@
 
       const durationElement = document.getElementById('session-duration');
       if (durationElement) {
-        durationElement.innerText = ${hours}::;
+        durationElement.innerText = `${hours}:${minutes}:${seconds}`;
+      } else {
+        console.error('session-duration element not found');
       }
     }, 1000);
   }
 
+  // Start a live clock
   function startLiveClock() {
     setInterval(() => {
       const now = new Date();
@@ -109,6 +133,7 @@
     }, 1000);
   }
 
+  // Initialize all functions on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', async () => {
     await fetchSessionData();
     startLiveClock();

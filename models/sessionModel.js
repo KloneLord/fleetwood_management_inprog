@@ -10,6 +10,7 @@ const sessionSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
         expires: 3600, // Session expires after 1 hour
+        _id: { type: String }, // Use a string instead of ObjectId
     },
 });
 

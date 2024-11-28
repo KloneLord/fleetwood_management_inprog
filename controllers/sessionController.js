@@ -1,24 +1,18 @@
-﻿
-import jwt from 'jsonwebtoken';
+﻿import jwt from 'jsonwebtoken';
 import { jwtSecret } from '../config/jwtConfig.js';
 import Session from '../models/sessionModel.js';
 import mongoose from 'mongoose';
-// @desc Create a new session
-// @route POST /api/sessions
-// @access Private
 
 // @desc Get session info for the current user
 // @route GET /api/sessions/info
 // @access Private
-// controllers/sessionController.js
-
 export const getSessionInfo = (req, res) => {
     if (!req.session || !req.session.user) {
         console.error('No session or user found in request.');
         return res.status(401).json({ message: 'Unauthorized: No active session' });
     }
 
-    const { username, role } = req.session.user; // Include the role
+    const { username, role, lic_no } = req.session.user; // Include lic_no
     let loginTime = req.session.loginTime;
 
     // Convert loginTime back to a Date object if it's a string
@@ -31,18 +25,19 @@ export const getSessionInfo = (req, res) => {
         return res.status(500).json({ message: 'loginTime is not set or invalid in session' });
     }
 
-    console.log('Session info retrieved successfully:', { username, role, loginTime });
+    console.log('Session info retrieved successfully:', { username, role, lic_no, loginTime });
 
     res.status(200).json({
         username,
-        role, // Send the role to the client
+        role,
+        lic_no, // Send lic_no to the client
         loginTime: loginTime.toISOString(), // Ensure ISO format for frontend
     });
 };
 
-
-
-
+// @desc Create a new session
+// @route POST /api/sessions
+// @access Private
 export const createSession = async (req, res) => {
     const { userId, deviceInfo } = req.body;
 
@@ -121,5 +116,3 @@ export const deleteAllSessions = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-
-

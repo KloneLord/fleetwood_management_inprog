@@ -1,15 +1,11 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-// Define the Job Site Schema
-const jobSiteSchema = new Schema({
-    siteName: { type: String, required: true },
-    siteAddress: { type: String, required: true },
-});
-
 // Define Customer Schema
 const customerSchema = new Schema(
     {
+        fleetwood_id: { type: String, required: true, unique: true }, // Unique Fleetwood ID
+        lic_number: { type: String, required: true }, // License number associated with the customer
         customerName: { type: String, required: true }, // Customer or Business name
         contactName: { type: String }, // Primary contact name
         phoneNumber: { type: String }, // Primary contact number
@@ -19,7 +15,10 @@ const customerSchema = new Schema(
         city: { type: String },
         postalCode: { type: String },
         region: { type: String },
-        jobSites: [jobSiteSchema], // Array of job sites as subdocuments
+        jobSites: { type: [String], default: [] }, // Array of strings for "name - address"
+        _id: { type: String }, // Use a string instead of ObjectId
+        added_by: { type: String, required: true }, // User who added the customer
+        active: { type: Boolean, default: true }, // Active status, default to true
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

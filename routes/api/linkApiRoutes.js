@@ -135,6 +135,8 @@ const linksByRole = {
                 { name: 'Employees', url: '/settings_employees.html' },
                 { name: 'Complaints', url: '/settings_user_complaints.html' },
                 { name: 'Archived Lists', url: '/settings_archived.html' },
+                { name: 'Archived Lists', url: '/settings_suppliers.html' },
+
             ],
         },
     ],
@@ -216,6 +218,7 @@ const linksByRole = {
                 { name: 'Employees', url: '/settings_employees.html' },
                 { name: 'Reports', url: '/settings_reports.html' },
                 { name: 'Mark Ups', url: '/settings_markups.html' },
+                { name: 'Suppliers', url: '/settings_suppliers.html' },
                 { name: 'Inventory Categories', url: '/settings_item_category.html' },
                 { name: 'Access Levels', url: '/settings_access_levels.html' },
                 { name: 'Complaints', url: '/settings_user_complaints.html' },

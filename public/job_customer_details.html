@@ -86,16 +86,44 @@
         <!-- Job Information -->
         <div class="form-section">
             <div class="tab-container">
-                <button onclick="window.location.href='job_card.html'" class="card-button"><strong>Job Card</strong></button>
-                <button onclick="window.location.href='job_customer_details.html'" class="card-button"><strong>Customer Details</strong></button>
-                <button onclick="window.location.href='job_time_logs.html'" class="card-button"><strong>Time Logs</strong></button>
-                <button onclick="window.location.href='job_material_logs.html'" class="card-button"><strong>Material Logs</strong></button>
-                <button onclick="window.location.href='job_forms_other.html'" class="card-button"><strong>Forms and Other</strong></button>
+                <button type="button" id="jobCard" class="card-button"><strong>Job Card</strong></button>
+                <button type="button" id="customerDetails" class="card-button"><strong>Customer Details</strong></button>
+                <button type="button" id="timeLogs" class="card-button"><strong>Time Logs</strong></button>
+                <button type="button" id="materialLogs" class="card-button"><strong>Material Logs</strong></button>
+                <button type="button" id="formsOther" class="card-button"><strong>Forms and Other</strong></button>
             </div>
 
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const customerId = sessionStorage.getItem('customerId');
+
+                    if (!customerId) {
+                        alert('No customer selected. Redirecting to customer list.');
+                        window.location.href = '/customers/list'; // Redirect to the customer list if no customerId
+                        return;
+                    }
+
+                    // Navigation setup without re-setting sessionStorage
+                    const setupNavigation = (buttonId, targetUrl) => {
+                        console.log('Customer ID before navigation:', customerId);
+                        const button = document.getElementById(buttonId);
+                        button.addEventListener('click', () => {
+                            window.location.href = targetUrl; // Navigate to the target URL
+                        });
+                    };
+
+                    setupNavigation('jobCard', '/job_card.html');
+                    setupNavigation('customerDetails', '/job_customer_details.html');
+                    setupNavigation('timeLogs', '/job_time_logs.html');
+                    setupNavigation('materialLogs', '/job_material_logs.html');
+                    setupNavigation('formsOther', '/job_forms_other.html');
+                });
+            </script>
 
 
-                        <h3>Personal Information</h3>
+
+
+            <h3>Personal Information</h3>
                         <div class="mb-3">
                             <label for="customerName" class="form-label">Customer Name</label>
                             <input type="text" class="form-control" id="customerName" name="customerName" required>
@@ -153,73 +181,56 @@
     </form>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const customerDropdown = document.getElementById('customer');
-        const jobSiteDropdown = document.getElementById('jobSite');
 
-        // Load customers and job sites
-        const loadCustomersWithJobSites = async () => {
-            try {
-                const response = await axios.get('/api/jobs/customers-with-job-sites');
-                const customers = response.data;
-
-                // Populate the customer dropdown
-                customers.forEach(customer => {
-                    const option = document.createElement('option');
-                    option.value = customer.customerId;
-                    option.textContent = customer.customerName;
-                    customerDropdown.appendChild(option);
-                });
-
-                // Load job sites when a customer is selected
-                customerDropdown.addEventListener('change', () => {
-                    const selectedCustomerId = customerDropdown.value;
-                    const selectedCustomer = customers.find(c => c.customerId === selectedCustomerId);
-
-                    jobSiteDropdown.innerHTML = '<option value="" disabled selected>Select a job site</option>';
-                    if (selectedCustomer) {
-                        selectedCustomer.jobSites.forEach(site => {
-                            const option = document.createElement('option');
-                            option.value = site.siteId;
-                            option.textContent = site.siteDisplayName;
-                            jobSiteDropdown.appendChild(option);
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading customers and job sites:', error);
-            }
-        };
-
-        // Submit form
-        const createJobForm = document.getElementById('createJobForm');
-        createJobForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const jobData = {
-                jobTitle: document.getElementById('jobTitle').value,
-                customerId: customerDropdown.value,
-                jobSiteId: jobSiteDropdown.value,
-                jobType: document.getElementById('jobType').value,
-                jobPriority: document.getElementById('jobPriority').value,
-                jobStatus: document.getElementById('jobStatus').value,
-                jobDescription: document.getElementById('jobDescription').value
-            };
-
-            try {
-                const response = await axios.post('/api/jobs', jobData);
-                alert('Job created successfully!');
-                createJobForm.reset();
-                jobSiteDropdown.innerHTML = '<option value="" disabled selected>Select a job site</option>';
-            } catch (error) {
-                console.error('Error creating job:', error);
-                alert('Failed to create job. Please try again.');
-            }
-        });
-
-        // Initial load
-        await loadCustomersWithJobSites();
+    document.addEventListener('DOMContentLoaded', () => {
+        const customerId = sessionStorage.getItem('customerId');
+        console.log('Customer ID:', customerId); // Debug log
+        if (!customerId) {
+            alert('No customer selected. Redirecting to customer list.');
+            window.location.href = '/customers/list';
+            return;
+        }
     });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const customerId = sessionStorage.getItem('customerId'); // Retrieve customerId from sessionStorage
+
+        if (!customerId) {
+            console.error('customerId is missing in sessionStorage. Ensure it is set before navigating.');
+            alert('No customer selected. Redirecting to customer list.');
+            window.location.href = '/customers/list';
+        }
+
+        try {
+            // Fetch customer details from the backend
+            const response = await axios.get(`/api/customers/${customerId}`);
+            const customer = response.data;
+
+            // Populate the customer display page
+            document.getElementById('customerName').innerText = customer.customerName || 'N/A';
+            document.getElementById('contactName').innerText = customer.contactName || 'N/A';
+            document.getElementById('phoneNumber').innerText = customer.phoneNumber || 'N/A';
+            document.getElementById('mobileNumber').innerText = customer.mobileNumber || 'N/A';
+            document.getElementById('emailAddress').innerText = customer.emailAddress || 'N/A';
+            document.getElementById('street').innerText = customer.street || 'N/A';
+            document.getElementById('city').innerText = customer.city || 'N/A';
+            document.getElementById('postalCode').innerText = customer.postalCode || 'N/A';
+            document.getElementById('region').innerText = customer.region || 'N/A';
+
+            // Populate job sites
+            const jobSitesContainer = document.getElementById('jobSitesContainer');
+            customer.jobSites.forEach((jobSite) => {
+                const jobSiteElement = document.createElement('div');
+                jobSiteElement.className = 'job-site';
+                jobSiteElement.innerText = `${jobSite.siteName}, ${jobSite.siteAddress}`;
+                jobSitesContainer.appendChild(jobSiteElement);
+            });
+        } catch (error) {
+            console.error('Error fetching customer details:', error);
+            alert('Failed to fetch customer details. Please try again.');
+        }
+    });
+
 
 </script>
 </body>

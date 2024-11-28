@@ -27,6 +27,7 @@ const inventorySchema = new Schema(
             totalSold: { type: Number, default: 0 },
             lastEdited: { type: String }, // Username of the editor
             editTime: { type: Date, default: Date.now }, // Time of edit
+            _id: { type: String }, // Use a string instead of ObjectId
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

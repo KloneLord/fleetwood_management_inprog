@@ -59,7 +59,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label for="jobSiteAddy" id="jobSiteAddyLabel" class="form-label">Customer ID</label>
+                    <label for="jobSiteAddy" id="jobSiteAddyLabel" class="form-label">Job Site Address</label>
                     <input type="text" class="form-control" id="jobSiteAddy" name="jobSiteAddy">
                 </div>
             </div>
@@ -113,6 +113,7 @@
         const customerDropdown = document.getElementById('customer');
         const jobSiteDropdown = document.getElementById('jobSite');
         const customerIDHolder = document.getElementById('customerIDHolder');
+        const jobSiteAddy = document.getElementById('jobSiteAddy'); // The input field for the job site address
 
         // Fetch customers from the database
         const fetchCustomers = async () => {
@@ -121,7 +122,7 @@
                 if (response.data && Array.isArray(response.data)) {
                     return response.data; // Return the array of customers
                 } else {
-                    throw new Error('Invalid customer data received from the server.');
+                    console.log('Invalid customer data received from the server.');
                 }
             } catch (error) {
                 console.error('Error fetching customers:', error);
@@ -148,7 +149,7 @@
                 if (response.data && Array.isArray(response.data.jobSites)) {
                     return response.data.jobSites; // Return the array of job sites
                 } else {
-                    throw new Error('No job sites found for this customer.');
+                    console.log('No job sites found for this customer.');
                 }
             } catch (error) {
                 console.error('Error fetching job sites:', error);
@@ -164,6 +165,7 @@
                 const option = document.createElement('option');
                 option.value = site._id; // Use job site ID as the value
                 option.textContent = site.siteName; // Use site name as the display text
+                option.dataset.address = site.siteAddress; // Store the site address in a data attribute
                 jobSiteDropdown.appendChild(option);
             });
         };
@@ -176,12 +178,20 @@
             if (!selectedCustomerId) {
                 console.warn('No customer selected.');
                 jobSiteDropdown.innerHTML = '<option value="">Select a job site</option>'; // Clear job site dropdown
+                jobSiteAddy.value = ''; // Clear job site address field
                 return;
             }
 
             // Fetch and populate job sites for the selected customer
             const jobSites = await fetchJobSites(selectedCustomerId);
             populateJobSiteDropdown(jobSites);
+        };
+
+        // Handle job site selection
+        const handleJobSiteSelection = () => {
+            const selectedOption = jobSiteDropdown.options[jobSiteDropdown.selectedIndex];
+            const siteAddress = selectedOption ? selectedOption.dataset.address : '';
+            jobSiteAddy.value = siteAddress || ''; // Populate the job site address field
         };
 
         // Initialize the form
@@ -191,13 +201,53 @@
 
             // Add event listener for customer dropdown
             customerDropdown.addEventListener('change', handleCustomerSelection);
+
+            // Add event listener for job site dropdown
+            jobSiteDropdown.addEventListener('change', handleJobSiteSelection);
         };
 
         // Start initialization
         await initializeForm();
     });
-</script>
 
+
+</script>
+<script>
+    document.getElementById('createJobForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const jobTitle = document.getElementById('jobTitle').value;
+        const customer = document.getElementById('customer').options[document.getElementById('customer').selectedIndex].text; // Get displayed customer name
+        const siteName = document.getElementById('jobSite').options[document.getElementById('jobSite').selectedIndex].text; // Get displayed job site name
+        const siteAddress = document.getElementById('jobSiteAddy').value; // Get entered job site address
+        const jobType = document.getElementById('jobType').value;
+        const jobPriority = document.getElementById('jobPriority').value;
+        const jobStatus = document.getElementById('jobStatus').value;
+        const jobDescription = document.getElementById('jobDescription').value;
+
+        const jobData = {
+            jobTitle,
+            customer,
+            siteName,
+            siteAddress,
+            jobType,
+            jobPriority,
+            jobStatus,
+            jobDescription,
+        };
+
+        try {
+            const response = await axios.post('/api/jobs', jobData);
+            if (response.status === 201) {
+                alert('Job created successfully!');
+                location.reload(); // Optionally reload the page
+            }
+        } catch (error) {
+            console.error('Error creating job:', error);
+            alert('Failed to create job. Please try again.');
+        }
+    });
+</script>
 
 
 </body>
