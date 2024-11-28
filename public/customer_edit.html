@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Customer</title>
+    <link href="styles.css" rel="stylesheet">
 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+    </style>
+    <script>
+        async function loadCustomerDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const fleetwood_id = params.get('fleetwood_id');
+            if (!fleetwood_id) {
+                alert('No Customer ID provided.');
+                return;
+            }
+
+            const response = await fetch(`/api/customer/${fleetwood_id}`);
+            if (!response.ok) {
+                alert('Failed to load customer details.');
+                return;
+            }
+
+            const customer = await response.json();
+
+            // Populate form fields with customer data
+            document.getElementById('customerName').value = customer.customerName || '';
+            document.getElementById('contactName').value = customer.contactName || '';
+            document.getElementById('phoneNumber').value = customer.phoneNumber || '';
+            document.getElementById('mobileNumber').value = customer.mobileNumber || '';
+            document.getElementById('emailAddress').value = customer.emailAddress || '';
+            document.getElementById('street').value = customer.street || '';
+            document.getElementById('city').value = customer.city || '';
+            document.getElementById('postalCode').value = customer.postalCode || '';
+            document.getElementById('region').value = customer.region || '';
+            document.getElementById('jobSites').value = (customer.jobSites || []).join(', ');
+            document.getElementById('status').value = customer.active ? 'Active' : 'Archived';
+        }
+
+        async function updateCustomer() {
+            const params = new URLSearchParams(window.location.search);
+            const fleetwood_id = params.get('fleetwood_id');
+            if (!fleetwood_id) {
+                alert('No Customer ID provided.');
+                return;
+            }
+
+            const data = {
+                customerName: document.getElementById('customerName').value,
+                contactName: document.getElementById('contactName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                mobileNumber: document.getElementById('mobileNumber').value,
+                emailAddress: document.getElementById('emailAddress').value,
+                street: document.getElementById('street').value,
+                city: document.getElementById('city').value,
+                postalCode: document.getElementById('postalCode').value,
+                region: document.getElementById('region').value,
+                jobSites: document.getElementById('jobSites').value.split(',').map(site => site.trim()),
+                active: document.getElementById('status').value === 'Active',
+            };
+
+            const response = await fetch(`/api/customer/${fleetwood_id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                alert('Customer updated successfully!');
+                window.close();
+            } else {
+                const error = await response.json();
+                alert(`Failed to update customer: ${error.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCustomerDetails);
+    </script>
+</head>
+<body>
+<h1>Edit Customer</h1>
+<div id="editCustomerForm">
+    <div class="form-group">
+        <label for="customerName">Customer Name:</label>
+        <input type="text" id="customerName" name="customerName" required>
+    </div>
+    <div class="form-group">
+        <label for="contactName">Contact Name:</label>
+        <input type="text" id="contactName" name="contactName">
+    </div>
+    <div class="form-group">
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" name="phoneNumber">
+    </div>
+    <div class="form-group">
+        <label for="mobileNumber">Mobile Number:</label>
+        <input type="text" id="mobileNumber" name="mobileNumber">
+    </div>
+    <div class="form-group">
+        <label for="emailAddress">Email Address:</label>
+        <input type="email" id="emailAddress" name="emailAddress">
+    </div>
+    <div class="form-group">
+        <label for="street">Street:</label>
+        <input type="text" id="street" name="street">
+    </div>
+    <div class="form-group">
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city">
+    </div>
+    <div class="form-group">
+        <label for="postalCode">Postal Code:</label>
+        <input type="text" id="postalCode" name="postalCode">
+    </div>
+    <div class="form-group">
+        <label for="region">Region:</label>
+        <input type="text" id="region" name="region">
+    </div>
+    <div class="form-group">
+        <label for="jobSites">Job Sites (comma-separated):</label>
+        <textarea id="jobSites" name="jobSites"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="Active">Active</option>
+            <option value="Archived">Archived</option>
+        </select>
+    </div>
+    <button onclick="updateCustomer()" class="fleetwood-button">Update</button>
+    <button onclick="window.close()" class="fleetwood-button">Close</button>
+</div>
+</body>
+</html>

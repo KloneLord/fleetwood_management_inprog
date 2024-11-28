@@ -1,24 +1,20 @@
 import express from 'express';
 import {
-    listCustomers,
-    getCustomer,
-    addCustomer,
-    editCustomer,
+    getCustomers,
     deleteCustomers,
-    archiveCustomers, // Ensure proper export and use
-    importCustomers,
-    exportCustomers,
+    archiveCustomers,
+    reinstateCustomers,
+    getCustomerById,
+    updateCustomer,
 } from '../../controllers/customerController.js';
 
 const router = express.Router();
 
-router.get('/', listCustomers); // List customers
-router.get('/export', exportCustomers); // Export customers
-router.get('/:id', getCustomer); // Get single customer by ID
-router.post('/', addCustomer); // Add a new customer
-router.put('/:id', editCustomer); // Edit customer
-router.delete('/', deleteCustomers); // Delete customers
-router.put('/archive', archiveCustomers); // Archive or reinstate customers
-router.post('/import', importCustomers); // Import customers
+router.get('/', getCustomers); // Fetch active/inactive customers
+router.post('/delete', deleteCustomers); // Delete selected customers
+router.post('/archive', archiveCustomers); // Archive selected customers
+router.post('/reinstate', reinstateCustomers); // Reinstate archived customers
+router.get('/:fleetwood_id', getCustomerById); // Get customer details for view/edit
+router.put('/:fleetwood_id', updateCustomer); // Update customer details
 
 export default router;

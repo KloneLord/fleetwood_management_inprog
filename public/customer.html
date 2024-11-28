@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer List</title>
+    <title>Template</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -44,195 +44,140 @@
 <!-- Main Content -->
 <div class="content-wrapper">
     <main class="container">
-        <div class="container mt-4">
-            <h1>Customer List</h1>
-            <div class="mb-3">
-                <button id="toggleArchived" class="btn btn-secondary">Show Archived</button>
-                <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
-                <button id="archiveSelected" class="btn btn-warning">Archive Selected</button>
-                <button id="reinstateSelected" class="btn btn-success">Reinstate Selected</button>
-            </div>
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
-                    <th>Customer ID</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody id="customerTable"></tbody>
-            </table>
-        </div>
-
-
-
+        <h1>Customer List</h1>
+        <input type="text" id="searchBar" placeholder="Search by name, phone, or email">
+        <button onclick="deleteSelected()">Delete</button>
+        <button onclick="archiveSelected()">Archive</button>
+        <button onclick="reinstateSelected()">Reinstate</button>
+        <button onclick="toggleArchived()">
+            Toggle Archived
+        </button>
+        <button onclick="openImportExportWindow()">Import/Export</button>
+        <table>
+            <thead>
+            <tr>
+                <th>Customer ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Action</th>
+                <th>Select</th>
+            </tr>
+            </thead>
+            <tbody id="customerTableBody"></tbody>
+        </table>
     </main>
 </div>
+<script>
+    let showArchived = false;
 
+    async function fetchCustomers() {
+        const search = document.getElementById('searchBar').value || '';
+        const response = await fetch(`/api/customer?active=${!showArchived}&search=${search}`);
+        const customers = await response.json();
+        const tableBody = document.getElementById('customerTableBody');
+        tableBody.innerHTML = '';
+        customers.forEach(customer => {
+            const row = `<tr>
+                    <td>${customer.fleetwood_id}</td>
+                    <td>${customer.customerName}</td>
+                    <td>${customer.phoneNumber}</td>
+                    <td>${customer.emailAddress}</td>
+                    <td>
+                        <button onclick="viewCustomer('${customer.fleetwood_id}')">View</button>
+                        <button onclick="editCustomer('${customer.fleetwood_id}')">Edit</button>
+                    </td>
+                    <td><input type="checkbox" class="select-row" value="${customer.fleetwood_id}"></td>
+                </tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    async function deleteSelected() {
+        const selected = getSelectedRows();
+        if (selected.length > 0) {
+            await fetch('/api/customer/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fleetwood_ids: selected }),
+            });
+            await fetchCustomers();
+        }
+    }
+
+    async function archiveSelected() {
+        const selected = getSelectedRows();
+        if (selected.length > 0) {
+            await fetch('/api/customer/archive', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fleetwood_ids: selected }),
+            });
+            await fetchCustomers();
+        }
+    }
+
+    async function reinstateSelected() {
+        const selected = getSelectedRows();
+        if (selected.length > 0) {
+            await fetch('/api/customer/reinstate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fleetwood_ids: selected }),
+            });
+            await fetchCustomers();
+        }
+    }
+
+    function toggleArchived() {
+        showArchived = !showArchived;
+        fetchCustomers();
+    }
+
+    function getSelectedRows() {
+        return Array.from(document.querySelectorAll('.select-row:checked')).map(cb => cb.value);
+    }
+
+    function viewCustomer(fleetwood_id) {
+        window.location.href = `/customer_display.html?fleetwood_id=${fleetwood_id}`;
+    }
+
+    function editCustomer(fleetwood_id) {
+        window.open(`/customer_edit.html?fleetwood_id=${fleetwood_id}`, 'Edit Customer', 'width=800,height=600');
+    }
+
+    function setupSearch() {
+        document.getElementById('searchBar').addEventListener('input', fetchCustomers);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchCustomers();
+        setupSearch();
+    });
+</script>
+<script>
+    function openImportExportWindow() {
+        // Calculate the dimensions for a 75% size window
+        const width = window.innerWidth * 0.75;
+        const height = window.innerHeight * 0.75;
+
+        // Calculate the position to center the window
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+
+        // Open the window with the calculated dimensions and position
+        window.open(
+            '/customer_import_export.html',
+            'ImportExportWindow',
+            `width=${width},height=${height},top=${top},left=${left}`
+        );
+    }
+</script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Sidebar Script -->
 <script src="/utils/sidebar.js"></script>
-
-<script>
-    // Function to open a new window
-    function openInNewWindow(url, title) {
-        const screenWidth = window.screen.width;
-        const screenHeight = window.screen.height;
-
-        // Calculate 70% of the screen size
-        const width = Math.floor(screenWidth * 0.7);
-        const height = Math.floor(screenHeight * 0.7);
-
-        // Calculate position to center the window
-        const left = Math.floor((screenWidth - width) / 2);
-        const top = Math.floor((screenHeight - height) / 2);
-
-        // Open the new window with calculated dimensions and position
-        const newWindow = window.open(
-            url,
-            title,
-            `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars`
-        );
-
-        if (!newWindow) {
-            alert('Please enable pop-ups for this website.');
-        }
-    }
-
-    // Example usage: Open the customer edit page
-    function editCustomer(fleetwoodId) {
-        const url = `/customer_edit.html?id=${fleetwoodId}`; // Pass the Fleetwood ID in the URL
-        openInNewWindow(url, 'Edit Customer');
-    }
-
-    // Example usage: Open the customer view page
-    function viewCustomer(fleetwoodId) {
-        const url = `/customer_display.html?id=${fleetwoodId}`; // Pass the Fleetwood ID in the URL
-        openInNewWindow(url, 'View Customer');
-    }
-
-
-    let showArchived = false;
-
-    // Fetch customer data from the server
-    async function fetchCustomers() {
-        try {
-            const response = await axios.get(`/api/customers?archived=${showArchived}`);
-            const customers = response.data;
-
-            // Clear and populate the table
-            const table = document.getElementById("customerTable");
-            table.innerHTML = "";
-
-            customers.forEach(customer => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-            <td><input type="checkbox" class="selectRow" data-id="${customer._id}"></td>
-            <td>${customer.fleetwood_id}</td>
-            <td>${customer.customerName}</td>
-            <td>${customer.phoneNumber}</td>
-            <td>${customer.emailAddress}</td>
-            <td>
-              <button class="btn btn-primary btn-sm" onclick="viewCustomer('${customer.fleetwood_id}')">View</button>
-              <button class="btn btn-secondary btn-sm" onclick="editCustomer('${customer.fleetwood_id}')">Edit</button>
-            </td>
-          `;
-                table.appendChild(row);
-            });
-        } catch (error) {
-            console.error("Error fetching customers:", error);
-        }
-    }
-
-
-    // Toggle archived rows
-    document.getElementById("toggleArchived").addEventListener("click", () => {
-        showArchived = !showArchived;
-        document.getElementById("toggleArchived").textContent = showArchived ? "Show Active" : "Show Archived";
-        fetchCustomers();
-    });
-
-    // Get selected customer IDs
-    function getSelectedCustomerIds() {
-        return Array.from(document.querySelectorAll(".selectRow:checked")).map(input => input.dataset.id);
-    }
-
-    // Confirm delete
-    async function deleteSelected() {
-        const ids = getSelectedCustomerIds();
-        if (ids.length === 0) {
-            alert("No customers selected.");
-            return;
-        }
-
-        const confirmation = prompt("Type DELETE to confirm deletion:");
-        if (confirmation !== "DELETE") {
-            alert("Deletion canceled.");
-            return;
-        }
-
-        try {
-            await axios.delete("/api/customers", { data: { ids } });
-            alert("Selected customers deleted successfully.");
-            await fetchCustomers();
-        } catch (error) {
-            console.error("Error deleting customers:", error);
-        }
-    }
-
-    // Archive selected customers
-    async function archiveSelected() {
-        const ids = getSelectedCustomerIds();
-        if (ids.length === 0) {
-            alert("No customers selected.");
-            return;
-        }
-
-        try {
-            await axios.put("/api/customers/archive", { ids, active: false });
-            alert("Selected customers archived successfully.");
-            await fetchCustomers();
-        } catch (error) {
-            console.error("Error archiving customers:", error);
-        }
-    }
-
-    // Reinstate selected customers
-    async function reinstateSelected() {
-        const ids = getSelectedCustomerIds();
-        if (ids.length === 0) {
-            alert("No customers selected.");
-            return;
-        }
-
-        try {
-            await axios.put("/api/customers/archive", { ids, active: true });
-            alert("Selected customers reinstated successfully.");
-            await fetchCustomers();
-        } catch (error) {
-            console.error("Error reinstating customers:", error);
-        }
-    }
-
-    // Event listeners
-    document.getElementById("deleteSelected").addEventListener("click", deleteSelected);
-    document.getElementById("archiveSelected").addEventListener("click", archiveSelected);
-    document.getElementById("reinstateSelected").addEventListener("click", reinstateSelected);
-
-    // Select all rows
-    document.getElementById("selectAll").addEventListener("change", function () {
-        const checkboxes = document.querySelectorAll(".selectRow");
-        checkboxes.forEach(checkbox => (checkbox.checked = this.checked));
-    });
-
-    // Initial fetch
-    fetchCustomers();
-</script>
 
 <script>
     // Fetch session data from the server

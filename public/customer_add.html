@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <link href="styles.css" rel="stylesheet">
 
+
   <style>
     .button-container {
       display: flex;
@@ -232,9 +233,9 @@
         </div>
 
       <div class="button-container">
-          <button type="button" style="max-width: 150px; margin-left: 200px" class="btn btn-sm btn-secondary" onclick="addJobSite()">Add Job Site</button>
+          <button type="button" style="max-width: 150px; margin-left: 200px"  class="fleetwood-button-slim" onclick="addJobSite()">Add Job Site</button>
           <div class="line-spacer"></div>
-          <button type="submit" style="max-width: 200px" class="fleet-button">Add Customer</button>
+          <button type="submit" class="fleetwood-button" style="max-width: 180px">Add Customer</button>
         </div>
       </form>
 
@@ -270,7 +271,7 @@
     <td class="row-number" style="color: #333333">${rowNumber}</td>
     <td class="site-info">${jobSiteFull}</td>
     <td>
-      <button type="button" class="btn btn-danger btn-sm" onclick="deleteJobSite(this, ${rowNumber - 1})">Delete</button>
+      <button type="button"  class="fleetwood-button-slim" onclick="deleteJobSite(this, ${rowNumber - 1})">Delete</button>
     </td>
   `;
     table.appendChild(row);

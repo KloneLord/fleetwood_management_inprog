@@ -4,177 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Details</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="styles.css" rel="stylesheet">
 
-    <style>
-        body {
-            background-color: #f4f6f9;
-            margin: 0;
-            font-family: Arial, sans-serif;
+    <script>
+        async function loadCustomerDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const fleetwood_id = params.get('fleetwood_id');
+            if (!fleetwood_id) {
+                alert('No Customer ID provided.');
+                return;
+            }
+
+            const response = await fetch(`/api/customer/${fleetwood_id}`);
+            if (!response.ok) {
+                alert('Failed to load customer details.');
+                return;
+            }
+
+            const customer = await response.json();
+            const detailsContainer = document.getElementById('customerDetails');
+            detailsContainer.innerHTML = `
+                <h2>Customer Details</h2>
+                <p><strong>Fleetwood ID:</strong> ${customer.fleetwood_id}</p>
+                <p><strong>License Number:</strong> ${customer.lic_number}</p>
+                <p><strong>Customer Name:</strong> ${customer.customerName}</p>
+                <p><strong>Contact Name:</strong> ${customer.contactName || 'N/A'}</p>
+                <p><strong>Phone Number:</strong> ${customer.phoneNumber || 'N/A'}</p>
+                <p><strong>Mobile Number:</strong> ${customer.mobileNumber || 'N/A'}</p>
+                <p><strong>Email Address:</strong> ${customer.emailAddress || 'N/A'}</p>
+                <p><strong>Street:</strong> ${customer.street || 'N/A'}</p>
+                <p><strong>City:</strong> ${customer.city || 'N/A'}</p>
+                <p><strong>Postal Code:</strong> ${customer.postalCode || 'N/A'}</p>
+                <p><strong>Region:</strong> ${customer.region || 'N/A'}</p>
+                <p><strong>Job Sites:</strong> ${customer.jobSites.join(', ') || 'N/A'}</p>
+                <p><strong>Added By:</strong> ${customer.added_by}</p>
+                <p><strong>Status:</strong> ${customer.active ? 'Active' : 'Archived'}</p>
+                <p><strong>Created At:</strong> ${new Date(customer.createdAt).toLocaleString()}</p>
+                <p><strong>Last Updated:</strong> ${new Date(customer.updatedAt).toLocaleString()}</p>
+            `;
         }
 
-        .header {
-            background-color: #20c997;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-        }
-
-        .header button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .container {
-            margin-top: 20px;
-        }
-
-        .customer-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .customer-card h2 {
-            color: #20c997;
-        }
-
-        .customer-card .field {
-            margin-bottom: 15px;
-        }
-
-        .customer-card .field span {
-            font-weight: bold;
-            color: #343a40;
-        }
-
-        .job-sites {
-            margin-top: 20px;
-        }
-
-        .job-site {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-
-        .buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .buttons .btn {
-            min-width: 100px;
-        }
-    </style>
+        document.addEventListener('DOMContentLoaded', loadCustomerDetails);
+    </script>
 </head>
 <body>
-<div class="header">
-    <h1>Customer Details</h1>
-    <button onclick="closeDetails()"><i class="fas fa-times"></i> Close</button>
+<h1>Customer Display Page</h1>
+<div id="customerDetails">
+    <!-- Customer details will be dynamically loaded here -->
 </div>
-
-<div class="container">
-    <div class="customer-card">
-        <h2 id="customerName">Customer Name</h2>
-        <div class="field"><span>Fleetwood ID:</span> <span id="fleetwoodId">N/A</span></div>
-        <div class="field"><span>Added By:</span> <span id="addedBy">N/A</span></div>
-        <div class="field"><span>License Number:</span> <span id="licNumber">N/A</span></div>
-        <div class="field"><span>Active:</span> <span id="activeStatus">N/A</span></div>
-        <div class="field"><span>Contact Name:</span> <span id="contactName">N/A</span></div>
-        <div class="field"><span>Phone Number:</span> <span id="phoneNumber">N/A</span></div>
-        <div class="field"><span>Mobile Number:</span> <span id="mobileNumber">N/A</span></div>
-        <div class="field"><span>Email Address:</span> <span id="emailAddress">N/A</span></div>
-        <div class="field"><span>Street:</span> <span id="street">N/A</span></div>
-        <div class="field"><span>City:</span> <span id="city">N/A</span></div>
-        <div class="field"><span>Postal Code:</span> <span id="postalCode">N/A</span></div>
-        <div class="field"><span>Region:</span> <span id="region">N/A</span></div>
-
-        <div class="job-sites">
-            <h3>Job Sites</h3>
-            <div id="jobSitesContainer"></div>
-        </div>
-    </div>
-
-    <div class="buttons">
-        <button class="btn btn-primary" style="min-width: 100px" onclick="editCustomer()">Edit</button>
-        <button class="btn btn-secondary" style="min-width: 100px" onclick="closePage()">Close</button>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-    // Fetch customer data from the server
-    async function fetchCustomerDetails() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const customerId = urlParams.get('id');
-
-        if (!customerId) {
-            alert("Customer ID not provided!");
-            return;
-        }
-
-        try {
-            const response = await axios.get(`/api/customers/${customerId}`);
-            const customer = response.data;
-
-            document.getElementById('customerName').textContent = customer.customerName || 'N/A';
-            document.getElementById('fleetwoodId').textContent = customer.fleetwood_id || 'N/A';
-            document.getElementById('addedBy').textContent = customer.added_by || 'N/A';
-            document.getElementById('licNumber').textContent = customer.lic_number || 'N/A';
-            document.getElementById('activeStatus').textContent = customer.active ? 'True' : 'False';
-            document.getElementById('contactName').textContent = customer.contactName || 'N/A';
-            document.getElementById('phoneNumber').textContent = customer.phoneNumber || 'N/A';
-            document.getElementById('mobileNumber').textContent = customer.mobileNumber || 'N/A';
-            document.getElementById('emailAddress').textContent = customer.emailAddress || 'N/A';
-            document.getElementById('street').textContent = customer.street || 'N/A';
-            document.getElementById('city').textContent = customer.city || 'N/A';
-            document.getElementById('postalCode').textContent = customer.postalCode || 'N/A';
-            document.getElementById('region').textContent = customer.region || 'N/A';
-
-            const jobSitesContainer = document.getElementById('jobSitesContainer');
-            jobSitesContainer.innerHTML = '';
-            customer.jobSites.forEach(site => {
-                const siteDiv = document.createElement('div');
-                siteDiv.className = 'job-site';
-                siteDiv.textContent = site;
-                jobSitesContainer.appendChild(siteDiv);
-            });
-        } catch (error) {
-            console.error('Error fetching customer details:', error);
-            alert('Failed to fetch customer details.');
-        }
-    }
-
-    function editCustomer() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const customerId = urlParams.get('id');
-        if (customerId) {
-            window.location.href = `/customer_edit.html?id=${customerId}`;
-        }
-    }
-
-    function closePage() {
-        window.close();
-    }
-
-    // Fetch and display customer details on page load
-    document.addEventListener('DOMContentLoaded', fetchCustomerDetails);
-</script>
+<button onclick="window.history.back()" class="fleetwood-button">Back</button>
 </body>
 </html>
