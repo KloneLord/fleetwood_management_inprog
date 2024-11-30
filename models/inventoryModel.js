@@ -5,6 +5,8 @@ const { Schema } = mongoose;
 const inventorySchema = new Schema(
     {
             itemID: { type: String, required: true },
+            fleetwood_id: { type: String, required: true, unique: true }, // Unique ID
+            lic_no: { type: String, required: true },
             itemDescription: { type: String, required: true },
             category: { type: String, required: true }, // Category reference
             subcategory: { type: String }, // Subcategory reference

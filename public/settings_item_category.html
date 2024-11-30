@@ -11,146 +11,244 @@
 <div class="container mt-5">
   <h1>Manage Categories and Subcategories</h1>
 
-  <!-- Live Categories and Subcategories -->
-  <div class="mb-3">
-    <label for="liveCategoriesDropdown" class="form-label">Live Categories</label>
-    <select id="liveCategoriesDropdown" class="form-control">
-      <option value="" disabled selected>Select a category</option>
-    </select>
-  </div>
-  <div class="mb-3">
-    <label for="liveSubcategoriesDropdown" class="form-label">Live Subcategories</label>
-    <select id="liveSubcategoriesDropdown" class="form-control">
-      <option value="" disabled selected>Select a subcategory</option>
-    </select>
-  </div>
-
-  <hr>
-
-  <!-- Add Category -->
-  <div class="mb-3">
-    <label for="newCategory" class="form-label">Add Category</label>
-    <input type="text" id="newCategory" class="form-control">
-    <button id="addCategoryBtn" class="btn btn-primary mt-2">Save Category</button>
+  <!-- Live Dropdowns -->
+  <div class="d-flex align-items-center mb-3">
+    <div class="me-3 flex-grow-1" style="max-width: 300px">
+      <label for="liveCategoriesDropdown" class="form-label">Live Categories</label>
+      <select id="liveCategoriesDropdown" class="form-control">
+        <option value="" disabled selected>Select a category</option>
+      </select>
+    </div>
+    <div class="flex-grow-1" style="max-width: 300px">
+      <label for="liveSubcategoriesDropdown" class="form-label">Live Subcategories</label>
+      <select id="liveSubcategoriesDropdown" class="form-control">
+        <option value="" disabled selected>Select a subcategory</option>
+      </select>
+    </div>
   </div>
 
   <hr>
 
-  <!-- Add Subcategory -->
-  <div class="mb-3">
-    <label for="parentCategoryDropdown" class="form-label">Parent Category</label>
-    <select id="parentCategoryDropdown" class="form-control"></select>
+  <!-- Add New Category and Subcategory -->
+  <div class="d-flex align-items-center mb-3">
+    <div class="me-3 flex-grow-1" style="max-width: 300px">
+      <label for="categoryInput" class="form-label">Category</label>
+      <input id="categoryInput" type="text" class="form-control" placeholder="Enter or select a category">
+    </div>
+    <div class="me-3 flex-grow-1" style="max-width: 300px">
+      <label for="subcategoryInput" class="form-label">Subcategory</label>
+      <input id="subcategoryInput" type="text" class="form-control" placeholder="Enter subcategory">
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="newSubcategory" class="form-label">Add Subcategory</label>
-    <input type="text" id="newSubcategory" class="form-control">
-    <button id="addSubcategoryBtn" class="btn btn-primary mt-2">Save Subcategory</button>
-  </div>
+  <button id="saveCategoryBtn" class="btn btn-primary mt-2">Save</button>
 
   <hr>
 
-  <!-- Delete Category -->
-  <div class="mb-3">
-    <label for="deleteCategoryDropdown" class="form-label">Delete Category</label>
-    <select id="deleteCategoryDropdown" class="form-control"></select>
-    <button id="deleteCategoryBtn" class="btn btn-danger mt-2">Delete Category</button>
-  </div>
-
-  <hr>
-
-  <!-- Delete Subcategory -->
-  <div class="mb-3">
-    <label for="deleteSubcategoryDropdown" class="form-label">Delete Subcategory</label>
-    <select id="deleteSubcategoryDropdown" class="form-control"></select>
-    <button id="deleteSubcategoryBtn" class="btn btn-danger mt-2">Delete Subcategory</button>
-  </div>
+  <!-- Management Table -->
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Category</th>
+      <th>Subcategory</th>
+      <th>Used By</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="categoriesTableBody"></tbody>
+  </table>
 </div>
-<script>
-  let categories = [];
-  let subcategories = [];
 
-  // Fetch categories and subcategories and populate dropdowns
+<script>
+<<<<<<< HEAD
+  let categories = [];
+
+  // Fetch categories and subcategories based on the user's license number
+  // Fetch categories and subcategories based on the user's license number
   const fetchCategoriesAndSubcategories = async () => {
     try {
-      const response = await axios.get('/api/categories');
-      categories = response.data.categories;
-      subcategories = response.data.subcategories;
+      const sessionData = await fetchSessionData();
+      const licenseNumber = sessionData.lic_no;
+
+      if (!licenseNumber) {
+        alert('License number is missing. Please log in.');
+        return;
+      }
+
+      const response = await axios.get('/api/categories', { params: { licenseNumber } });
+      categories = response.data;
 
       // Populate dropdowns
       populateDropdown('liveCategoriesDropdown', categories);
       populateDropdown('parentCategoryDropdown', categories);
       populateDropdown('deleteCategoryDropdown', categories);
     } catch (err) {
-      console.error('Error fetching categories:', err.message);
+      console.error('Error fetching categories:', err.response?.data || err.message);
     }
   };
 
-  // Populate dropdown helper function
-  const populateDropdown = (dropdownId, items, filterFn = null) => {
-    const dropdown = document.getElementById(dropdownId);
-    dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
 
-    const filteredItems = filterFn ? items.filter(filterFn) : items;
-    const addedItems = new Set();
 
-    filteredItems.forEach(item => {
-      if (!addedItems.has(item._id)) {
-        const option = document.createElement('option');
-        option.value = item._id;
-        option.textContent = item.name;
-        dropdown.appendChild(option);
-        addedItems.add(item._id); // Avoid duplicates
-      }
-    });
-  };
 
-  // Update liveSubcategoriesDropdown when liveCategoriesDropdown changes
-  document.getElementById('liveCategoriesDropdown').addEventListener('change', (e) => {
-    const selectedCategoryId = e.target.value;
-
-    // Filter subcategories by parentId
-    populateDropdown('liveSubcategoriesDropdown', subcategories, sub => sub.parentId === selectedCategoryId);
-  });
 
   // Add Category
   document.getElementById('addCategoryBtn').addEventListener('click', async () => {
+    const sessionData = await fetchSessionData();
+    const licenseNumber = sessionData.lic_no;
     const newCategory = document.getElementById('newCategory').value;
-    if (!newCategory) return alert('Category name is required.');
+
+    if (!newCategory) {
+      alert('Category name is required.');
+      return;
+    }
 
     try {
-      // Check if the category already exists
-      const existingCategory = categories.find(cat => cat.name === newCategory);
-      if (existingCategory) {
-        return alert('Category already exists!');
-      }
-
-      await axios.post('/api/categories', { name: newCategory });
+      await axios.post('/api/categories', { name: newCategory, licenseNumber });
       alert('Category added successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
       console.error('Error adding category:', err.message);
+=======
+  // Fetch session data to get licenseNumber
+  async function fetchSessionData() {
+    try {
+      const response = await fetch('/api/sessions/info');
+      if (!response.ok) throw new Error('Failed to fetch session data');
+      const data = await response.json();
+      console.log('Session data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching session data:', error);
+      return null;
     }
-  });
+  }
 
+  // Fetch categories from the server
+  const fetchCategories = async () => {
+    const sessionData = await fetchSessionData();
+    if (!sessionData) return;
+
+    const licenseNumber = sessionData.lic_no;
+
+    try {
+      const res = await axios.get('/api/categories', { params: { licenseNumber } });
+      const categories = res.data;
+
+      // Clear existing dropdown and table data
+      const categoriesDropdown = document.getElementById('liveCategoriesDropdown');
+      const subcategoriesDropdown = document.getElementById('liveSubcategoriesDropdown');
+      const tableBody = document.getElementById('categoriesTableBody');
+      categoriesDropdown.innerHTML = '<option value="" disabled selected>Select a category</option>';
+      subcategoriesDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
+      tableBody.innerHTML = '';
+
+      // Populate dropdowns and table
+      categories.forEach((category) => {
+        // Populate categories dropdown
+        const categoryOption = document.createElement('option');
+        categoryOption.value = category.name;
+        categoryOption.textContent = category.name;
+        categoriesDropdown.appendChild(categoryOption);
+
+        // Populate table with subcategories
+        category.subcategories.forEach((subcategory) => {
+          const row = `<tr>
+            <td>${category.name}</td>
+            <td>${subcategory}</td>
+            <td>${category.usedBy ?? 0}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteCategory('${category.fleetwood_id}')">Delete</button></td>
+          </tr>`;
+          tableBody.innerHTML += row;
+        });
+      });
+
+      // Dynamically update subcategories dropdown when a category is selected
+      categoriesDropdown.addEventListener('change', (e) => {
+        const selectedCategory = e.target.value;
+        subcategoriesDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
+        const selectedCat = categories.find((cat) => cat.name === selectedCategory);
+        if (selectedCat) {
+          selectedCat.subcategories.forEach((subcat) => {
+            const subOption = document.createElement('option');
+            subOption.value = subcat;
+            subOption.textContent = subcat;
+            subcategoriesDropdown.appendChild(subOption);
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  // Save category and subcategory
+  const saveCategory = async () => {
+    const sessionData = await fetchSessionData();
+    if (!sessionData) return;
+
+    const licenseNumber = sessionData.lic_no;
+    const category = document.getElementById('categoryInput').value.trim();
+    const subcategory = document.getElementById('subcategoryInput').value.trim();
+
+    if (!category || !subcategory) {
+      alert('Both fields are required.');
+      return;
+    }
+
+    try {
+      await axios.post('/api/categories', {
+        licenseNumber,
+        name: category,
+        subcategories: subcategory,
+        usedBy: 0,
+      });
+
+      alert('Category and Subcategory saved successfully!');
+      await fetchCategories();
+    } catch (error) {
+      console.error('Error saving category:', error.response?.data || error.message);
+    }
+  };
+
+  // Delete category
+  const deleteCategory = async (fleetwood_id) => {
+    try {
+      await axios.delete(`/api/categories/${fleetwood_id}`);
+      alert('Category deleted successfully!');
+      await fetchCategories();
+    } catch (error) {
+      console.error('Error deleting category:', error.response?.data || error.message);
+>>>>>>> de7a00b (dont do it)
+    }
+  };
+
+<<<<<<< HEAD
+  // Populate dropdown helper function
+  const populateDropdown = (dropdownId, items) => {
+    const dropdown = document.getElementById(dropdownId);
+    dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
+
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.fleetwood_id; // Use fleetwood_id
+      option.textContent = item.name;
+      dropdown.appendChild(option);
+    });
+  };
   // Add Subcategory
   document.getElementById('addSubcategoryBtn').addEventListener('click', async () => {
     const parentCategoryId = document.getElementById('parentCategoryDropdown').value;
     const newSubcategory = document.getElementById('newSubcategory').value;
 
     if (!parentCategoryId || !newSubcategory) {
-      return alert('Parent category and subcategory name are required.');
+      alert('Parent category and subcategory name are required.');
+      return;
     }
 
     try {
-      // Check if the subcategory already exists under the parent category
-      const existingSubcategory = subcategories.find(
-              sub => sub.name === newSubcategory && sub.parentId === parentCategoryId
-      );
-      if (existingSubcategory) {
-        return alert('Subcategory already exists under this category!');
-      }
-
-      await axios.post('/api/categories/subcategories', { name: newSubcategory, parentId: parentCategoryId });
+      await axios.post('/api/categories/subcategories', {
+        fleetwood_id: parentCategoryId,
+        subcategoryName: newSubcategory,
+      });
       alert('Subcategory added successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
@@ -162,33 +260,34 @@
   document.getElementById('deleteCategoryBtn').addEventListener('click', async () => {
     const categoryId = document.getElementById('deleteCategoryDropdown').value;
 
-    if (!categoryId) return alert('Select a category to delete.');
+    if (!categoryId) {
+      alert('Select a category to delete.');
+      return;
+    }
 
     try {
-      const response = await axios.delete(`/api/categories/${categoryId}`);
-      alert(`Deleted category. Subcategories affected: ${response.data.subcategories.join(', ')}`);
+      await axios.delete(`/api/categories/${categoryId}`);
+      alert('Category deleted successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
       console.error('Error deleting category:', err.message);
     }
   });
 
-  // Update deleteSubcategoryDropdown when deleteCategoryDropdown changes
-  document.getElementById('deleteCategoryDropdown').addEventListener('change', (e) => {
-    const selectedCategoryId = e.target.value;
-
-    // Filter subcategories by parentId
-    populateDropdown('deleteSubcategoryDropdown', subcategories, sub => sub.parentId === selectedCategoryId);
-  });
-
   // Delete Subcategory
   document.getElementById('deleteSubcategoryBtn').addEventListener('click', async () => {
-    const subcategoryId = document.getElementById('deleteSubcategoryDropdown').value;
+    const subcategoryName = document.getElementById('deleteSubcategoryDropdown').value;
+    const parentCategoryId = document.getElementById('deleteCategoryDropdown').value;
 
-    if (!subcategoryId) return alert('Select a subcategory to delete.');
+    if (!subcategoryName || !parentCategoryId) {
+      alert('Select a category and subcategory to delete.');
+      return;
+    }
 
     try {
-      await axios.delete(`/api/subcategories/${subcategoryId}`);
+      await axios.delete(`/api/categories/subcategories/${parentCategoryId}`, {
+        data: { subcategoryName },
+      });
       alert('Subcategory deleted successfully.');
       await fetchCategoriesAndSubcategories();
     } catch (err) {
@@ -196,10 +295,22 @@
     }
   });
 
+  // Fetch session data
+  const fetchSessionData = async () => {
+    const response = await axios.get('/api/sessions/info');
+    return response.data;
+  };
+
   // Initialize the page
   document.addEventListener('DOMContentLoaded', fetchCategoriesAndSubcategories);
-</script>
+=======
+  // Add event listener to save button
+  document.getElementById('saveCategoryBtn').addEventListener('click', saveCategory);
 
+  // Load categories on page load
+  fetchCategories();
+>>>>>>> de7a00b (dont do it)
+</script>
 
 </body>
 </html>

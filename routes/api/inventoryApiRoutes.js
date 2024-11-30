@@ -2,17 +2,30 @@ import express from 'express';
 import {
     listInventories,
     getInventory,
-    addInventory,
+    addInventoryItem,
     editInventory,
     deleteInventories,
+    getInventoryItems,
 } from '../../controllers/inventoryController.js';
 
 const router = express.Router();
 
-router.get('/', listInventories); // List all inventories
-router.get('/:id', getInventory); // Get inventory by ID
-router.post('/', addInventory); // Add a new inventory item
-router.put('/:id', editInventory); // Edit inventory by ID
-router.delete('/', deleteInventories); // Delete multiple inventory items
+// Route to list all inventory items
+router.get('/', listInventories);
+
+// Route to get a single inventory item by ID
+router.get('/:id', getInventory);
+
+// Route to add a new inventory item
+router.post('/', addInventoryItem);
+
+// Route to edit an inventory item by ID
+router.put('/:id', editInventory);
+
+// Route to delete multiple inventory items
+router.delete('/', deleteInventories);
+
+// Route to get inventory items for a specific license
+router.get('/license/items', getInventoryItems);
 
 export default router;

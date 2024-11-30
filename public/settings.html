@@ -44,7 +44,55 @@
 <!-- Main Content -->
 <div class="content-wrapper">
     <main class="container">
+        <div class="container mt-5">
+            <h1>Manage Categories and Subcategories</h1>
 
+            <!-- Live Dropdowns -->
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3 flex-grow-1" style="max-width: 300px">
+                    <label for="liveCategoriesDropdown" class="form-label">Live Categories</label>
+                    <select id="liveCategoriesDropdown" class="form-control">
+                        <option value="" disabled selected>Select a category</option>
+                    </select>
+                </div>
+                <div class="flex-grow-1" style="max-width: 300px">
+                    <label for="liveSubcategoriesDropdown" class="form-label">Live Subcategories</label>
+                    <select id="liveSubcategoriesDropdown" class="form-control">
+                        <option value="" disabled selected>Select a subcategory</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Add New Category and Subcategory -->
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3 flex-grow-1" style="max-width: 300px">
+                    <label for="categoryInput" class="form-label">Category</label>
+                    <input id="categoryInput" type="text" class="form-control" placeholder="Enter or select a category">
+                </div>
+                <div class="me-3 flex-grow-1" style="max-width: 300px">
+                    <label for="subcategoryInput" class="form-label">Subcategory</label>
+                    <input id="subcategoryInput" type="text" class="form-control" placeholder="Enter subcategory">
+                </div>
+            </div>
+            <button id="saveCategoryBtn" class="btn btn-primary mt-2">Save</button>
+
+            <hr>
+
+            <!-- Management Table -->
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Used By</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="categoriesTableBody"></tbody>
+            </table>
+        </div>
 
 
     </main>
@@ -55,7 +103,125 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Sidebar Script -->
 <script src="/utils/sidebar.js"></script>
+<script>
+    // Fetch session data to get licenseNumber
+    async function fetchSessionData() {
+        try {
+            const response = await fetch('/api/sessions/info');
+            if (!response.ok) throw new Error('Failed to fetch session data');
+            const data = await response.json();
+            console.log('Session data:', data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching session data:', error);
+            return null;
+        }
+    }
 
+    // Fetch categories from the server
+    const fetchCategories = async () => {
+        const sessionData = await fetchSessionData();
+        if (!sessionData) return;
+
+        const licenseNumber = sessionData.lic_no;
+
+        try {
+            const res = await axios.get('/api/categories', { params: { licenseNumber } });
+            const categories = res.data;
+
+            // Clear existing dropdown and table data
+            const categoriesDropdown = document.getElementById('liveCategoriesDropdown');
+            const subcategoriesDropdown = document.getElementById('liveSubcategoriesDropdown');
+            const tableBody = document.getElementById('categoriesTableBody');
+            categoriesDropdown.innerHTML = '<option value="" disabled selected>Select a category</option>';
+            subcategoriesDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
+            tableBody.innerHTML = '';
+
+            // Populate dropdowns and table
+            categories.forEach((category) => {
+                // Populate categories dropdown
+                const categoryOption = document.createElement('option');
+                categoryOption.value = category.name;
+                categoryOption.textContent = category.name;
+                categoriesDropdown.appendChild(categoryOption);
+
+                // Populate table with subcategories
+                category.subcategories.forEach((subcategory) => {
+                    const row = `<tr>
+            <td>${category.name}</td>
+            <td>${subcategory}</td>
+            <td>${category.usedBy ?? 0}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteCategory('${category.fleetwood_id}')">Delete</button></td>
+          </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+
+            // Dynamically update subcategories dropdown when a category is selected
+            categoriesDropdown.addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                subcategoriesDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
+                const selectedCat = categories.find((cat) => cat.name === selectedCategory);
+                if (selectedCat) {
+                    selectedCat.subcategories.forEach((subcat) => {
+                        const subOption = document.createElement('option');
+                        subOption.value = subcat;
+                        subOption.textContent = subcat;
+                        subcategoriesDropdown.appendChild(subOption);
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    };
+
+    // Save category and subcategory
+    const saveCategory = async () => {
+        const sessionData = await fetchSessionData();
+        if (!sessionData) return;
+
+        const licenseNumber = sessionData.lic_no;
+        const category = document.getElementById('categoryInput').value.trim();
+        const subcategory = document.getElementById('subcategoryInput').value.trim();
+
+        if (!category || !subcategory) {
+            alert('Both fields are required.');
+            return;
+        }
+
+        try {
+            await axios.post('/api/categories', {
+                licenseNumber,
+                name: category,
+                subcategories: subcategory,
+                usedBy: 0,
+            });
+
+            alert('Category and Subcategory saved successfully!');
+            await fetchCategories();
+        } catch (error) {
+            console.error('Error saving category:', error.response?.data || error.message);
+        }
+    };
+
+    // Delete category
+    const deleteCategory = async (fleetwood_id) => {
+        try {
+            await axios.delete(`/api/categories/${fleetwood_id}`);
+            alert('Category deleted successfully!');
+            await fetchCategories();
+        } catch (error) {
+            console.error('Error deleting category:', error.response?.data || error.message);
+        }
+    };
+
+    // Add event listener to save button
+    document.getElementById('saveCategoryBtn').addEventListener('click', saveCategory);
+
+    // Load categories on page load
+    fetchCategories();
+</script>
 <script>
     // Fetch session data from the server
     async function fetchSessionData() {

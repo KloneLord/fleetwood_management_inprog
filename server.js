@@ -47,7 +47,12 @@ app.use(
         },
     })
 );
-
+app.get('/test-session', (req, res) => {
+    if (req.session.lic_no) {
+        return res.json({ message: `License number is: ${req.session.lic_no}` });
+    }
+    res.status(400).json({ message: 'License number missing in session.' });
+});
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/utils', express.static(path.join(__dirname, 'utils'))); // Serve utils folder
@@ -55,15 +60,15 @@ app.use('/utils', express.static(path.join(__dirname, 'utils'))); // Serve utils
 // API Routes
 app.use('/api', apiRoutes);
 app.use('/api/sessions', sessionRoutes);
-app.use('/api/customer', customerApiRoutes);
+app.use('/api/customers', customerApiRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/auth', authApiRoutes);
 app.use('/api/sessions', sessionApiRoutes);
 app.use('/api/links', linkApiRoutes);
-app.use('/api/customers', customerApiRoutes);
+app.use('/api/customer', customerApiRoutes);
 app.use('/api/categories', categoryApiRoutes);
 app.use('/api/markups', markUpApiRoutes);
-app.use('/api/inventories', inventoryApiRoutes);
+app.use('/api/inventory', inventoryApiRoutes);
 app.use('/api/jobs', jobsApiRoutes);
 
 
@@ -90,6 +95,10 @@ app.get('/customer', (req, res) =>
 app.get('/business', (req, res) =>
     res.sendFile(path.join(__dirname, 'public', 'business.html'))
 );
+app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+    next();
+});
 
 // Database connection and server startup
 (async () => {

@@ -28,6 +28,8 @@ export const generateUniqueId = async (prefix) => {
         }
     }
 
+
+
     console.log(`Final unique ID generated and saved: ${uniqueId}`);
     return uniqueId;
 };

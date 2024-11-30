@@ -144,7 +144,9 @@
       Welcome <span id="username">User</span>, logged in for
       <span id="session-duration">00:00:00</span>
     </div>
-
+    <div id="license-info">
+      Logged in under License Number:  <span id="licNoPlace"></span>
+    </div>
     <!-- Live Clock + Icons -->
     <div class="icon-section">
       <div>
@@ -243,55 +245,43 @@
         </div>
 
 
+
         <div class="form-box">
-          <!-- Cost Price and Markup -->
+          <strong>Cost Price and Markup</strong>
+          <div class="mb-3">
+            <label for="purchasePrice" class="form-label">Purchase Price</label>
+            <input type="number" class="form-control" id="purchasePrice" value="0.00" required>
+          </div>
+          <div class="form-check mb-3">
+            <input type="checkbox" id="systemsMarkupCheckbox" style="width: 40px" class="form-check-input">
+            <label for="systemsMarkupCheckbox" class="form-check-label">Use markup presets</label>
+            <input type="checkbox" id="customSellCheckbox" style="width: 40px" class="form-check-input">
+            <label for="customSellCheckbox" class="form-check-label">Custom sell price</label>
+          </div>
+          <div id="markupDrop" class="mb-3">
+            <label for="markupDropdown" class="form-label">Markup</label>
+            <select id="markupDropdown" class="form-select">
+              <option value="" disabled selected>Select a markup</option>
+            </select>
+          </div>
+          <div id="markupVal" class="mb-3">
+            <label for="markupAmount" class="form-label">Markup (%)</label>
+            <input type="number" class="form-control" id="markupAmount" value="0" disabled>
+          </div>
+          <div id="customPrice" class="mb-3" style="display:none;">
+            <label for="customSellPrice" class="form-label">Custom Sell Price</label>
+            <input type="number" class="form-control" id="customSellPrice" value="0.00">
+          </div>
           <div>
-            <strong>Cost Price and Markup</strong>
-            <div class="mb-3">
-              <label for="purchasePrice" class="form-label">Purchase Price</label>
-              <input type="number" class="form-control" id="purchasePrice" name="purchasePrice" value="0.00" required>
-            </div>
-            <div class="form-check mb-3">
-              <input type="checkbox"  style="max-width: 20px " class="form-check-input" id="systemsMarkupCheckbox">
-              <label for="systemsMarkupCheckbox" class="form-check-label">Use the markup presets</label>
-              <input type="checkbox"  style="max-width: 20px "class="form-check-input" id="customSellCheckbox">
-              <label for="customSellCheckbox" class="form-check-label">Custom sell price.</label>
-            </div>
-            <div class="mb-3">
-              <label for="markupDropdown" class="form-label">Markup</label>
-              <select id="markupDropdown" class="form-select" name="markupDropdown">
-                <option value="" disabled selected>Select a markup</option>
-                <!-- Markups will be populated dynamically -->
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="markupAmount" class="form-label">Markup (%)</label>
-              <input type="number" class="form-control" id="markupAmount" name="markupAmount"  value="0" disabled>
-            </div>
-
-            <div class="form-check mb-3">
-            </div>
-            <div id="customSellPriceWindow" class="mini-window hidden">
-              <div class="mb-3">
-                <label for="customSellPrice" class="form-label"  >Enter your own sell value</label>
-                <input type="number" class="form-control" id="customSellPrice" value="0.00" name="customSellPrice">
-              </div>
-            </div>
-
-            <div class="form-check mb-3">
-              <button type="button" id="addMarkupBtn" class="btn btn-secondary mt-2">Add Markups</button>
-            </div>
-
-            <div id="finalizedSellWindow" class="mini-window">
-              <div>
-                <strong>Finalized Sell Price:</strong> $<span id="finalizedSellPriceDisplay">0.00</span>
-              </div>
-            </div>
-
+            <strong>Finalized Sell Price:</strong> $<span id="finalizedSellPriceDisplay">0.00</span>
           </div>
         </div>
 
-        <div class="form-box">
+
+
+
+
+<div class="form-box">
           <!-- Location in Warehouse -->
           <div>
             <strong>Location in Warehouse</strong>
@@ -339,7 +329,7 @@
             </div>
           </div>
         </div>
-        <div class="form-box">
+        <div class="form-box" id="isActiveContainer" style="display: none;">
           <div class="form-check mb-3">
             <input type="checkbox" style="max-width: 20px" class="form-check-input" id="isActive" name="isActive" checked>
             <label class="form-check-label" for="isActive">Is Active</label>
@@ -379,161 +369,12 @@
 
   </main>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const markupDropdown = document.getElementById('markupDropdown');
-    const categoryDropdown = document.getElementById('categoryDropdown');
-    const subCategoryDropdown = document.getElementById('subCategoryDropdown');
-    const purchasePriceInput = document.getElementById('purchasePrice');
-    const markupAmountInput = document.getElementById('markupAmount');
-    const customSellCheckbox = document.getElementById('customSellCheckbox');
-    const customSellPriceInput = document.getElementById('customSellPrice');
-    const systemsMarkupCheckbox = document.getElementById('systemsMarkupCheckbox');
-    const finalizedSellPriceDisplay = document.getElementById('finalizedSellPriceDisplay');
-    let categories = [];
-    let subcategories = [];
-    let markups = []; // Store markups
-
-    // Fetch and populate markups
-    const fetchMarkups = async () => {
-      try {
-        const response = await axios.get('/api/markups');
-        markups = response.data || [];
-        populateDropdown('markupDropdown', markups, 'title');
-      } catch (err) {
-        console.error('Error fetching markups:', err.message);
-      }
-    };
-
-    // Fetch and populate categories and subcategories
-    const fetchCategoriesAndSubcategories = async () => {
-      try {
-        const response = await axios.get('/api/categories');
-        categories = response.data.categories || [];
-        subcategories = response.data.subcategories || [];
-        populateDropdown('categoryDropdown', categories, 'name');
-        populateDropdown('subCategoryDropdown', []); // Clear subcategories initially
-      } catch (err) {
-        console.error('Error fetching categories and subcategories:', err.message);
-      }
-    };
-
-    // Populate dropdown helper
-    const populateDropdown = (dropdownId, items, textProperty = 'name', filterFn = null) => {
-      const dropdown = document.getElementById(dropdownId);
-      dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
-      const filteredItems = filterFn ? items.filter(filterFn) : items;
-
-      filteredItems.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item._id;
-        option.textContent = item[textProperty];
-        dropdown.appendChild(option);
-      });
-    };
-
-    // Update subcategories dynamically when category changes
-    categoryDropdown.addEventListener('change', (e) => {
-      const selectedCategoryId = e.target.value;
-      const filteredSubcategories = subcategories.filter(sub => sub.parentId === selectedCategoryId);
-      populateDropdown('subCategoryDropdown', filteredSubcategories, 'name');
-    });
-
-    // Update markup amount when markup is selected
-    markupDropdown.addEventListener('change', (e) => {
-      const selectedMarkupId = e.target.value;
-      const selectedMarkup = markups.find(markup => markup._id === selectedMarkupId);
-
-      if (selectedMarkup && selectedMarkup.modifier) {
-        markupAmountInput.value = selectedMarkup.modifier; // Use markup percentage
-      } else {
-        markupAmountInput.value = 0; // Default to 0 if no valid selection
-      }
-
-      calculateFinalizedSell(); // Recalculate sell price
-    });
-
-    // Calculate the finalized sell price
-    const calculateFinalizedSell = () => {
-      const purchasePrice = parseFloat(purchasePriceInput.value) || 0;
-      const markupAmount = parseFloat(markupAmountInput.value) || 0;
-      const customSellPrice = parseFloat(customSellPriceInput.value) || 0;
-
-      let finalizedSellPrice = 0;
-
-      if (systemsMarkupCheckbox.checked) {
-        // Apply markup to the purchase price
-        finalizedSellPrice = purchasePrice + (purchasePrice * (markupAmount / 100));
-      } else if (customSellCheckbox.checked) {
-        // Use the custom sell price directly
-        finalizedSellPrice = customSellPrice;
-      }
-
-      if (finalizedSellPriceDisplay) {
-        finalizedSellPriceDisplay.textContent = finalizedSellPrice.toFixed(2);
-      }
-      return finalizedSellPrice.toFixed(2);
-    };
-
-    // Handle form submission
-    const inventoryForm = document.getElementById('inventoryForm');
-    inventoryForm.addEventListener('submit', async (event) => {
-      event.preventDefault(); // Prevent default form submission
-
-      // Gather form data
-      const formData = {
-        itemID: document.getElementById('itemID').value,
-        itemDescription: document.getElementById('itemDescription').value,
-        currentStockLevel: parseInt(document.getElementById('currentStockLevel').value) || 0,
-        onOrder: parseInt(document.getElementById('onOrder').value) || 0,
-        category: categoryDropdown.options[categoryDropdown.selectedIndex]?.text || '', // Save category name
-        subcategory: subCategoryDropdown.options[subCategoryDropdown.selectedIndex]?.text || '', // Save subcategory name
-        supplierName: document.getElementById('supplierName').value,
-        purchasePrice: parseFloat(document.getElementById('purchasePrice').value).toFixed(2),
-        markupAmount: parseFloat(document.getElementById('markupAmount').value).toFixed(2),
-        customSellPrice: parseFloat(document.getElementById('customSellPrice').value).toFixed(2),
-        finalizedSellPrice: calculateFinalizedSell(),
-        location: document.getElementById('location').value,
-        detailLoc: document.getElementById('detailLoc').value,
-        barcode: document.getElementById('barcode').value,
-        qrCode: document.getElementById('qrCode').value,
-        reorderPoint: parseInt(document.getElementById('reorderPoint').value) || 0,
-        alertThreshold: parseInt(document.getElementById('alertThreshold').value) || 0,
-        isActive: document.getElementById('isActive').checked,
-        notes: document.getElementById('notes').value,
-      };
-
-      try {
-        const response = await axios.post('/api/inventories', formData);
-        const responseMessage = document.getElementById('responseMessage');
-        responseMessage.textContent = 'Item added successfully!';
-        responseMessage.className = 'alert alert-success';
-      } catch (error) {
-        console.error('Error saving inventory item:', error.message);
-        const responseMessage = document.getElementById('responseMessage');
-        responseMessage.textContent = 'Failed to save item. Please try again.';
-        responseMessage.className = 'alert alert-danger';
-      }
-    });
-
-    // Initial Load
-    fetchCategoriesAndSubcategories();
-    fetchMarkups();
-  });
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Sidebar Script -->
-<script src="/utils/sidebar.js"></script>
-
 <script>
   // Fetch session data from the server
   async function fetchSessionData() {
     try {
       const response = await fetch('/api/sessions/info');
-      if (!response.ok) throw new Error('Failed to fetch session data');
+      if (!response.ok) console.log('Failed to fetch session data');
       const data = await response.json();
 
       // Log session data
@@ -545,6 +386,15 @@
         usernameElement.innerText = data.username;
       }
 
+      // Update the username
+      const licNo = data.lic_no;
+      console.log('norto found licence Number:', licNo);
+
+      const licNoElement = document.getElementById('licNoPlace');
+      if (licNoElement) {
+        licNoElement.innerText = data.lic_no;
+      }
+
       // Start the session timer
       startSessionTimer(data.loginTime);
 
@@ -554,6 +404,7 @@
       return null;
     }
   }
+
 
   // Start a session duration timer
   function startSessionTimer(loginTime) {
@@ -593,9 +444,284 @@
 
   // Initialize all functions on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', async () => {
+
     await fetchSessionData();
     startLiveClock();
+
   });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    const subCategoryDropdown = document.getElementById('subCategoryDropdown');
+    let categories = [];
+
+    // Fetch session data to get licenseNumber
+    async function fetchSessionData() {
+      try {
+        const response = await fetch('/api/sessions/info');
+        if (!response.ok) console.log('Failed to fetch session data');
+        const data = await response.json();
+
+        // Log session data
+        console.log('Session data received:', data);
+
+        // Update the username
+        const usernameElement = document.getElementById('username');
+        if (usernameElement) {
+          usernameElement.innerText = data.username;
+        }
+
+        // Update the username
+        const licNo = data.lic_no;
+        console.log('norto found licence Number:', licNo);
+        const username = data.username;
+        console.log('norto found username:', username);
+
+        const licNoElement = document.getElementById('licNoPlace');
+        if (licNoElement) {
+          licNoElement.innerText = data.lic_no;
+        }
+
+        // Start the session timer
+        startSessionTimer(data.loginTime);
+
+        return data;
+      } catch (error) {
+        console.error('Error fetching session data:', error);
+        return null;
+      }
+    }
+
+
+    // Fetch categories from the server based on licenseNumber
+    const fetchCategories = async (licenseNumber) => {
+      try {
+        console.log('Fetching categories for license:', licenseNumber); // Debug
+        const response = await axios.get('/api/categories', {
+          params: {licenseNumber},
+        });
+        console.log('Fetched categories:', response.data); // Debug
+        categories = response.data;
+        populateCategoryDropdown(categories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    // Populate the category dropdown
+    const populateCategoryDropdown = (categories) => {
+      categoryDropdown.innerHTML = '<option value="" disabled selected>Select a category</option>';
+      categories.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category.name;
+        option.textContent = category.name;
+        categoryDropdown.appendChild(option);
+      });
+    };
+
+    // Populate the subcategory dropdown when a category is selected
+    const populateSubCategoryDropdown = (categoryName) => {
+      const selectedCategory = categories.find((cat) => cat.name === categoryName);
+      subCategoryDropdown.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
+      if (selectedCategory) {
+        selectedCategory.subcategories.forEach((subcategory) => {
+          const option = document.createElement('option');
+          option.value = subcategory;
+          option.textContent = subcategory;
+          subCategoryDropdown.appendChild(option);
+        });
+      }
+    };
+
+    // Event listener for category change
+    categoryDropdown.addEventListener('change', (e) => {
+      populateSubCategoryDropdown(e.target.value);
+    });
+
+    // Initial load
+    const licenseNumber = await fetchSessionData();
+    if (licenseNumber) {
+      await fetchCategories(licenseNumber);
+    }
+  });
+
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const systemsMarkupCheckbox = document.getElementById('systemsMarkupCheckbox');
+    const customSellCheckbox = document.getElementById('customSellCheckbox');
+    const purchasePriceInput = document.getElementById('purchasePrice');
+    const markupAmountInput = document.getElementById('markupAmount');
+    const customSellPriceInput = document.getElementById('customSellPrice');
+    const finalizedSellPriceDisplay = document.getElementById('finalizedSellPriceDisplay');
+    const markupDropdown = document.getElementById('markupDropdown');
+
+    const fetchSessionData = async () => {
+      try {
+        const response = await fetch('/api/sessions/info');
+        return response.ok ? await response.json() : null;
+      } catch (error) {
+        console.error('Error fetching session:', error);
+        return null;
+      }
+    };
+
+    const fetchMarkups = async (licenseNumber) => {
+      try {
+        const response = await axios.get('/api/markups', { params: { licenseNumber } });
+        populateMarkupDropdown(response.data);
+      } catch (error) {
+        console.error('Error fetching markups:', error);
+      }
+    };
+
+    const populateMarkupDropdown = (markups) => {
+      // Clear the dropdown first
+      markupDropdown.innerHTML = '';
+
+      // Add the default option only if no markups are provided
+      if (markups.length === 0) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.textContent = 'Select a markup';
+        markupDropdown.appendChild(defaultOption);
+      }
+
+      // Populate the dropdown with markup items
+      markups.forEach(({ title, modifier }) => {
+        const option = document.createElement('option');
+        option.value = modifier;
+        option.textContent = title;
+        markupDropdown.appendChild(option);
+      });
+    };
+
+    const updateVisibility = () => {
+      if (systemsMarkupCheckbox.checked) {
+        customSellCheckbox.checked = false;
+        document.getElementById('customPrice').style.display = 'none';
+        document.getElementById('markupDrop').style.display = 'block';
+        document.getElementById('markupVal').style.display = 'block';
+      } else {
+        document.getElementById('customPrice').style.display = 'block';
+        document.getElementById('markupDrop').style.display = 'none';
+        document.getElementById('markupVal').style.display = 'none';
+      }
+      calculateFinalizedSellPrice();
+    };
+
+    const calculateFinalizedSellPrice = () => {
+      const purchasePrice = parseFloat(purchasePriceInput.value) || 0;
+      const markupAmount = parseFloat(markupAmountInput.value) || 0;
+      const customSellPrice = parseFloat(customSellPriceInput.value) || 0;
+
+      let finalizedSellPrice;
+
+      if (systemsMarkupCheckbox.checked) {
+        // Calculate price using markup percentage
+        finalizedSellPrice = purchasePrice * (1 + markupAmount / 100);
+      } else if (customSellCheckbox.checked) {
+        // Use custom sell price directly
+        finalizedSellPrice = customSellPrice;
+      } else {
+        // Default fallback
+        finalizedSellPrice = 0;
+      }
+
+      finalizedSellPriceDisplay.textContent = finalizedSellPrice.toFixed(2);
+    };
+
+
+    // Ensure mutual exclusivity and prevent both checkboxes from being off
+    const enforceCheckboxLogic = () => {
+      if (!systemsMarkupCheckbox.checked && !customSellCheckbox.checked) {
+        // If both are off, default to systemsMarkupCheckbox
+        systemsMarkupCheckbox.checked = true;
+      }
+      updateVisibility();
+    };
+
+    // Event listeners to enforce logic
+    systemsMarkupCheckbox.addEventListener('change', () => {
+      if (systemsMarkupCheckbox.checked) {
+        customSellCheckbox.checked = false;
+      }
+      enforceCheckboxLogic();
+    });
+
+    customSellCheckbox.addEventListener('change', () => {
+      if (customSellCheckbox.checked) {
+        systemsMarkupCheckbox.checked = false;
+      }
+      enforceCheckboxLogic();
+    });
+
+    systemsMarkupCheckbox.addEventListener('change', updateVisibility);
+    customSellCheckbox.addEventListener('change', updateVisibility);
+    purchasePriceInput.addEventListener('input', calculateFinalizedSellPrice);
+    markupAmountInput.addEventListener('input', calculateFinalizedSellPrice);
+    customSellPriceInput.addEventListener('input', calculateFinalizedSellPrice);
+    markupDropdown.addEventListener('change', (e) => {
+      markupAmountInput.value = e.target.value || 0;
+      calculateFinalizedSellPrice();
+    });
+
+    // Fetch session data and markups, then initialize
+    const sessionData = await fetchSessionData();
+    if (sessionData) {
+      await fetchMarkups(sessionData.lic_no);
+    }
+
+    // Ensure systemsMarkupCheckbox is checked on page load
+    systemsMarkupCheckbox.checked = true;
+
+    // Initial visibility and sell price calculation
+    updateVisibility();
+    calculateFinalizedSellPrice();
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sidebar Script -->
+<script src="/utils/sidebar.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const inventoryForm = document.getElementById('inventoryForm');
+    const responseMessage = document.getElementById('responseMessage');
+
+    inventoryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(inventoryForm);
+      const data = Object.fromEntries(formData.entries());
+
+      // Convert numbers
+      data.currentStockLevel = parseInt(data.currentStockLevel || 0, 10);
+      data.onOrder = parseInt(data.onOrder || 0, 10);
+      data.purchasePrice = parseFloat(data.purchasePrice || 0);
+      data.markupAmount = parseFloat(data.markupAmount || 0);
+      data.customSellPrice = parseFloat(data.customSellPrice || 0);
+      data.finalizedSellPrice = parseFloat(data.finalizedSellPrice || 0);
+      data.reorderPoint = parseInt(data.reorderPoint || 0, 10);
+      data.alertThreshold = parseInt(data.alertThreshold || 0, 10);
+      data.isActive = data.isActive === 'on';
+
+      try {
+        const response = await axios.post('/api/inventory', data);
+        responseMessage.innerHTML = `<div class="alert alert-success">${response.data.message}</div>`;
+        inventoryForm.reset(); // Reset the form
+      } catch (error) {
+        responseMessage.innerHTML = `<div class="alert alert-danger">Error: ${error.response.data.message}</div>`;
+      }
+    });
+  });
+
 </script>
 </body>
 </html>

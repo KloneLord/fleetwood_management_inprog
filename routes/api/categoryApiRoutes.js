@@ -1,33 +1,35 @@
 import express from 'express';
 import {
-    listCategories,
-    addCategory,
+    getCategories,
+    saveCategory,
     deleteCategory,
+<<<<<<< HEAD
     addSubcategory,
-    deleteSubcategory
+    deleteSubcategory,
+=======
+>>>>>>> de7a00b (dont do it)
 } from '../../controllers/categoryController.js';
 
 const router = express.Router();
 
-// Fetch all categories
-router.get('/', listCategories);
+// Get categories and subcategories
+router.get('/', getCategories);
 
-// Add a new category
-router.post('/', addCategory);
+// Save a category and subcategory
+router.post('/', saveCategory);
 
+<<<<<<< HEAD
 // Delete a category
 router.delete('/:id', deleteCategory);
 
 // Add a new subcategory
-router.post('/subcategories', (req, res, next) => {
-    console.log('POST /api/categories/subcategories route accessed');
-    next(); // Log the route access and proceed to the controller
-}, addSubcategory);
+router.post('/subcategories', addSubcategory);
 
 // Delete a subcategory
-router.delete('/subcategories/:id', (req, res, next) => {
-    console.log('DELETE /api/categories/subcategories/:id accessed with ID:', req.params.id);
-    next(); // Log the route access and proceed to the controller
-}, deleteSubcategory);
+router.delete('/subcategories/:id', deleteSubcategory);
+=======
+// Delete a category row
+router.delete('/:fleetwood_id', deleteCategory);
+>>>>>>> de7a00b (dont do it)
 
 export default router;
