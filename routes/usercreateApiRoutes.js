@@ -10,8 +10,8 @@ import {
     updateHoursWorked,
     updateBilledHours,
     updateUserSkills,
-} from '../../controllers/userController.js';
-import authMiddleware from '../../middleware/authMiddleware.js';
+} from '../controllers/userController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -34,5 +34,17 @@ router.put('/profile/billedHours', authMiddleware, updateBilledHours); // Update
 
 // Skills management route
 router.put('/profile/skills', authMiddleware, updateUserSkills); // Update skills for current user
+
+// Logout route
+router.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error clearing session:', err);
+            return res.status(500).json({ message: 'Failed to clear session' });
+        }
+        res.clearCookie('connect.sid'); // Clear session cookie
+        res.status(200).json({ message: 'Session cleared successfully' });
+    });
+});
 
 export default router;

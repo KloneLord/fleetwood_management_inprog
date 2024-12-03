@@ -1,6 +1,6 @@
 import express from 'express';
-import { getSessionInfo } from '../../controllers/sessionController.js';
-import { ensureAuthenticated } from '../../middleware/authMiddleware.js';
+import { getSessionInfo } from '../controllers/sessionController.js';
+import { ensureAuthenticated } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

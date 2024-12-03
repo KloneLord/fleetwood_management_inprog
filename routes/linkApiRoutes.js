@@ -143,6 +143,19 @@ const linksByRole = {
     admin: [
         { name: 'Dashboard', icon: 'fas fa-tachometer-alt', url: '/dashboard', active: false },
         {
+            name: 'Templates',
+            icon: 'fas fa-box-open',
+            url: '/templates',
+            active: false,
+            subItems: [
+                { name: 'Template', url: '/temp.html' },
+                { name: 'Add', url: '/temp_add.html' },
+                { name: 'List', url: '/temp_list.html' },
+                { name: 'Edit', url: '/temp_edit.html' },
+                { name: 'test', url: '/test.html' },
+            ],
+        },
+        {
             name: 'Customers',
             icon: 'fas fa-users',
             url: '/customers',

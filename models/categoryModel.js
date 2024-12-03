@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
 
-// Define Category Schema
-const CategorySchema = new mongoose.Schema({
-    fleetwood_id: { type: String, required: true, unique: true }, // Unique ID
-    licenseNumber: { type: String, required: true }, // License number for session validation
-    name: { type: String, required: true }, // Category name
-    subcategories: { type: String, required: true }, // Subcategory name
-    usedBy: { type: Number, default: 0 }, // Prevent deletion if usedBy > 0
+// Define Subcategory Schema
+const SubcategorySchema = new mongoose.Schema({
+    name: { type: String, required: true },
 });
 
+// Define Category Schema
+const CategorySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    subcategories: [SubcategorySchema], // Array of subdocuments
+    fleetwood_id: { type: String, required: true, unique: true },
+    licenseNumber: { type: String, required: true },
+});
+
+
+// Export Category Model
 export default mongoose.model('Category', CategorySchema);
